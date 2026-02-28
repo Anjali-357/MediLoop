@@ -1,0 +1,267 @@
+/* frontend/src/modules/painscan/style.css */
+:root {
+  --primary: #4a90e2;
+  --bg: #1a1a2e;
+  --card-bg: #16213e;
+  --text: #e2e2e2;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.painscan-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary), #6fb1fc);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 1rem;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+}
+
+.pulse-btn {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(74, 144, 226, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 144, 226, 0); }
+}
+
+.scan-prompt h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.scan-prompt p {
+  color: #a0a0a0;
+  margin-bottom: 1.5rem;
+}
+
+.icon-wrapper {
+  background: rgba(255,255,255,0.05);
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.instructions {
+  text-align: left;
+  background: rgba(0,0,0,0.2);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.instructions li {
+  margin-bottom: 0.5rem;
+  color: #dcdcdc;
+}
+
+/* Camera View */
+.camera-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.animated-border {
+  padding: 5px;
+  background: linear-gradient(90deg, #ff007a, #7a00ff, #00d2ff, #00ff7a);
+  background-size: 400% 400%;
+  border-radius: 20px;
+  animation: gradientSpin 3s ease infinite;
+}
+
+@keyframes gradientSpin {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+video {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  background: black;
+  display: block;
+}
+
+.overlay {
+  margin-top: 1rem;
+}
+
+.countdown {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  margin-bottom: 0.5rem;
+}
+
+.feedback-box {
+  background: rgba(255,255,255,0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+/* Pain Meter */
+.pain-meter {
+  margin: 1.5rem 0;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  border: 6px solid;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+}
+
+.score-circle .emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.score-circle .number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.gauge-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 5px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+}
+
+.gauge-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.pain-history h3 {
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+/* Animations */
+.fade-in { animation: fadeIn 0.4s ease; }
+.slide-up { animation: slideUp 0.4s ease; }
+.zoom-in { animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+/* Multimodal Enhancements */
+.multimodal-meter {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.core-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.risk-badge {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.risk-low { background: #4CAF50; color: white; }
+.risk-moderate { background: #FF9800; color: white; }
+.risk-high { background: #F44336; color: white; animation: pulse 1s infinite alternate; }
+
+.physio-overlay {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 15px 25px;
+  min-width: 200px;
+}
+.physio-overlay h4 {
+  margin: 0 0 15px 0;
+  color: #aaa;
+  font-size: 0.9rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.vitals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vital {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+.vital .label { color: #888; }
+.vital .val { color: #fff; font-weight: bold; }
+.pulse-red { color: #ff5252 !important; }
+
+.multimodal-rings::before {
+  content: '';
+  position: absolute;
+  top: -10px; left: -10px; right: -10px; bottom: -10px;
+  border: 2px dashed rgba(255,255,255,0.2);
+  border-radius: 24px;
+  animation: spin 10s linear infinite;
+  pointer-events: none;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }

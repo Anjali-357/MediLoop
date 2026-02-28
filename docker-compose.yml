@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Optional: You can run Ollama via docker, or natively on your Mac.
+  # Running natively on Mac is usually better for Metal (M1/M2/M3) GPU acceleration.
+  # ollama:
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"
