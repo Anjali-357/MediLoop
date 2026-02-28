@@ -3,19 +3,53 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:7.0
+    container_name: mediloop-mongodb
     ports:
       - "27017:27017"
     volumes:
-      - ./data/mongo:/data/db
+      - mongo_data:/data/db
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    container_name: mediloop-redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+      
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mediloop-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_URL=redis://redis:6379
+      - FRONTEND_URL=http://localhost:5174
+      - MONGO_DB_NAME=mediloop
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET:-123456}
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
 
-  # Optional: You can run Ollama via docker, or natively on your Mac.
-  # Running natively on Mac is usually better for Metal (M1/M2/M3) GPU acceleration.
-  # ollama:
-  #   image: ollama/ollama
-  #   ports:
-  #     - "11434:11434"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mediloop-frontend
+    ports:
+      - "5174:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
