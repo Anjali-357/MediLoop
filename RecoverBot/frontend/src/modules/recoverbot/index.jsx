@@ -12,8 +12,8 @@ import FollowupList from "./components/FollowupList";
 import AlertFeed from "./components/AlertFeed";
 import CheckinHistory from "./components/CheckinHistory";
 import RiskBadge from "./components/RiskBadge";
-// AppContext exported from context/AppContext.jsx
-import { AppContext } from "../../context/AppContext";
+// AppContext exported from App.jsx (works both standalone and in MediLoop shell)
+import { AppContext } from "../../App.jsx";
 
 const API_BASE = import.meta.env?.VITE_API_URL ?? "http://localhost:8000";
 
@@ -48,8 +48,10 @@ export default function RecoverBot() {
     useEffect(() => {
         if (!authToken) return;
         setLoading(true);
-        // Force load ALL followups for the dashboard view instead of filtering by the hardcoded mock patient
-        const followupUrl = `/api/recoverbot/followups`;
+        // If a specific patient is selected load their data; otherwise load ALL followups
+        const followupUrl = patientId
+            ? `/api/recoverbot/followups/${patientId}`
+            : `/api/recoverbot/followups`;
         Promise.all([
             apiFetch(followupUrl, authToken),
             apiFetch("/api/recoverbot/risk-flagged", authToken),

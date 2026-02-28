@@ -23,11 +23,7 @@ async def handle_patient_discharged(payload: dict) -> None:
     await create_followup(patient_id, consultation_id)
 
 
-async def _listen_patient_discharged():
-    async for payload in subscribe("patient.discharged"):
-        await handle_patient_discharged(payload)
-
 async def start_subscribers() -> None:
     """Start all background subscriber tasks. Called in @app.on_event('startup')."""
-    asyncio.create_task(_listen_patient_discharged())
+    asyncio.create_task(subscribe("patient.discharged", handle_patient_discharged))
     print("[recoverbot:events] Subscribed to patient.discharged")

@@ -1,0 +1,57 @@
+services:
+
+  # ─── Redis (event bus + scheduler state) ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: recoverbot_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes # persist data to disk
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ─── Backend (FastAPI) ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recoverbot_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env # MONGO_URI, GEMINI_API_KEY, TWILIO_*, JWT_SECRET
+    environment:
+      REDIS_URL: redis://redis:6379 # override .env — use the container
+      FRONTEND_URL: http://localhost:80
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 20s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    volumes:
+      # Mount risk_model.pkl so you don't have to retrain inside the container
+      - ./module2_recoverbot/risk_model.pkl:/app/module2_recoverbot/risk_model.pkl:ro
+
+  # ─── Frontend (Nginx serving the Vite build) ────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: recoverbot_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+
+volumes:
+  redis_data:
