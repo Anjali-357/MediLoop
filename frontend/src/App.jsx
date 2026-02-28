@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext'
 import ScribeAIModule from './modules/scribe'
 import RecoverbotModule from './modules/recoverbot'
 import PainscanModule from './modules/painscan'
+import CareGapModule from './modules/caregap'
 
 function App() {
   return (
@@ -28,6 +29,9 @@ function App() {
                     <a href="/painscan" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                       PainScan
                     </a>
+                    <a href="/caregap" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                      CareGap
+                    </a>
                   </div>
                 </div>
               </div>
@@ -40,6 +44,7 @@ function App() {
               <Route path="/scribe" element={<ScribeAIModule />} />
               <Route path="/recoverbot" element={<RecoverbotModule />} />
               <Route path="/painscan" element={<PainscanModule />} />
+              <Route path="/caregap" element={<CareGapModule />} />
               <Route path="*" element={
                 <div className="text-center py-12">
                   <h2 className="text-base font-semibold text-primary-600">404</h2>

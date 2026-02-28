@@ -135,3 +135,4 @@ class CareGapOut(MongoBaseModel):
     status: str
     priority: int
     flagged_at: datetime
+    sent_at: Optional[datetime] = None

@@ -1,6 +1,6 @@
 import os
 import json
-import aioredis
+import redis.asyncio as aioredis
 from typing import AsyncGenerator
 
 _redis = None

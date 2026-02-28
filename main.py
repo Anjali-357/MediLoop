@@ -21,6 +21,12 @@ try:
 except ImportError:
     painscan_router = None
 
+try:
+    from module4_caregap.router import router as caregap_router
+    from module4_caregap.scanner import setup_scanner as caregap_setup_scanner
+except ImportError:
+    caregap_router = None
+
 app = FastAPI(title='MediLoop')
 
 # CORS settings
@@ -39,6 +45,8 @@ if recoverbot_router:
     app.include_router(recoverbot_router, prefix='/api/recoverbot')
 if painscan_router:
     app.include_router(painscan_router, prefix='/api/painscan')
+if caregap_router:
+    app.include_router(caregap_router, prefix='/api/caregap')
 
 @app.on_event("startup")
 async def startup_event():
@@ -52,6 +60,13 @@ async def startup_event():
         print("✅ RecoverBot events and scheduler started")
     except ImportError:
         pass
+        
+    try:
+        from module4_caregap.scanner import setup_scanner as caregap_setup_scanner
+        caregap_setup_scanner()
+        print("✅ CareGap events and scheduler started")
+    except ImportError as e:
+        print(f"Failed to load CareGap: {e}")
 
 @app.get("/")
 def read_root():
