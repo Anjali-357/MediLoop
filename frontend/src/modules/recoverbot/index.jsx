@@ -226,11 +226,42 @@ export default function RecoverBot() {
                         >
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                                 <div>
-                                    <h2 style={{ margin: 0, color: "#e2e8f0" }}>Follow-up Detail</h2>
+                                    <h2 style={{ margin: 0, color: "#e2e8f0" }}>Follow-up Detail — {selected.patient_name}</h2>
                                     <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "0.8rem", fontFamily: "monospace" }}>{selected._id}</p>
                                 </div>
                                 <RiskBadge label={selected.risk_label} />
                             </div>
+
+                            {/* Conversation Log — always visible */}
+                            <div style={{ marginBottom: 24 }}>
+                                <h3 style={{ color: "#e2e8f0", marginBottom: 12 }}>💬 Conversation History</h3>
+                                {(!selected.conversation_log || selected.conversation_log.length === 0) ? (
+                                    <p style={{ color: "#475569", fontSize: "0.85rem" }}>No messages yet. Waiting for patient reply via WhatsApp.</p>
+                                ) : (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 400, overflowY: "auto", padding: "4px 0" }}>
+                                        {selected.conversation_log.map((entry, i) => (
+                                            <div key={i} style={{ display: "flex", justifyContent: entry.role === "bot" ? "flex-start" : "flex-end" }}>
+                                                <div style={{
+                                                    maxWidth: "75%",
+                                                    padding: "10px 14px",
+                                                    borderRadius: entry.role === "bot" ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+                                                    background: entry.role === "bot" ? "#1e293b" : "#4f46e5",
+                                                    color: "#f1f5f9",
+                                                    fontSize: "0.85rem",
+                                                    lineHeight: 1.6,
+                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                                                }}>
+                                                    <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{entry.message}</p>
+                                                    <p style={{ margin: "6px 0 0", fontSize: "0.68rem", opacity: 0.5, textAlign: entry.role === "bot" ? "left" : "right" }}>
+                                                        {entry.role === "bot" ? "🤖 RecoverBot" : "👤 Patient"} · {new Date(entry.timestamp).toLocaleTimeString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             <CheckinHistory followup={selected} />
                         </div>
                     </div>
