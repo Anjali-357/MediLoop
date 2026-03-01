@@ -10,7 +10,7 @@ from typing import Any
 from bson import ObjectId
 from shared.database import db
 from shared.events import publish
-from .gemini_service import generate_opener, continue_conversation, extract_features
+from .gemini_service import generate_opener, continue_conversation, extract_features, generate_suggested_action
 from .risk_service import score_risk
 from .twilio_service import send_whatsapp
 from .scheduler_service import schedule_checkins
@@ -208,22 +208,33 @@ async def process_patient_reply(patient_id: str, patient_message: str) -> dict:
 
     if risk_label in ("HIGH", "CRITICAL"):
         update_fields["status"] = "flagged"
+        
+        # Generate Gemini suggested action
+        suggested_action = await generate_suggested_action(risk_label, features, diagnosis)
+        update_fields["suggested_action"] = suggested_action
+
         # Redis event → Module 4 CareGap
         await publish("followup.flagged", {
             "patient_id": patient_id,
             "risk_score": risk_score,
             "risk_label": risk_label,
             "followup_id": str(followup_id),
+            "suggested_action": suggested_action
         })
         # Doctor alert via Twilio (could be doctor's number from .env / DB)
         # Broadcast via WebSocket
         if ws_manager:
             await ws_manager.broadcast({
                 "type": "RISK_ALERT",
-                "patient_id": patient_id,
-                "risk_score": risk_score,
-                "risk_label": risk_label,
-                "followup_id": str(followup_id),
+                "topic": "recoverbot.flagged",
+                "data": {
+                    "patient_id": patient_id,
+                    "patient_name": (patient or {}).get("name", "Unknown"),
+                    "risk_score": risk_score,
+                    "risk_label": risk_label,
+                    "followup_id": str(followup_id),
+                    "suggested_action": suggested_action
+                }
             })
 
         # Pediatric hook → PainScan

@@ -72,13 +72,43 @@ async def analyze_message(req: AnalyzeMessageRequest):
     )
 
     intent = classification["intent"]
+    confidence = classification["confidence"]
     suggested_module = INTENT_TO_MODULE.get(intent, "chatbot")
+
+    # ── Phase 4: Confidence Guard ─────────────────────────────────────────
+    CONFIDENCE_THRESHOLD = 0.75
+    if confidence < CONFIDENCE_THRESHOLD:
+        # Send clarification before routing — do NOT activate a module
+        phone = patient.get("phone", "")
+        if phone:
+            from module6_commhub.gateway import send_whatsapp
+            clarification = (
+                f"Could you tell me a bit more? "
+                f"Are you experiencing pain right now, or is this about your recovery? "
+                "Reply and I'll connect you with the right support. 💙"
+            )
+            send_whatsapp(phone, clarification)
+
+        decision_id = await store_decision(
+            patient_id=req.patient_id,
+            intent=intent,
+            confidence=confidence,
+            reasoning=f"[CONFIDENCE GUARD] Below threshold ({confidence:.0%}). Awaiting clarification.",
+            suggested_module="clarification_pending",
+            trigger_source=req.trigger_source,
+        )
+        return APIResponse(
+            success=True,
+            data={"decision_id": decision_id, "intent": intent, "confidence": confidence,
+                  "suggested_module": "clarification_pending", "action_taken": "Clarification requested"},
+            message=f"Confidence {confidence:.0%} below threshold — clarification requested",
+        )
 
     # Store decision
     decision_id = await store_decision(
         patient_id=req.patient_id,
         intent=intent,
-        confidence=classification["confidence"],
+        confidence=confidence,
         reasoning=classification.get("reasoning", ""),
         suggested_module=suggested_module,
         trigger_source=req.trigger_source,
@@ -98,7 +128,7 @@ async def analyze_message(req: AnalyzeMessageRequest):
         data={
             "decision_id": decision_id,
             "intent": intent,
-            "confidence": classification["confidence"],
+            "confidence": confidence,
             "reasoning": classification.get("reasoning", ""),
             "suggested_module": suggested_module,
             "action_taken": action_result["action_taken"],

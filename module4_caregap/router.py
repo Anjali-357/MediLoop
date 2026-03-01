@@ -90,3 +90,52 @@ async def get_analytics():
         stats[gtype][status] = count
         
     return APIResponse(success=True, data=stats, message="Analytics fetched")
+
+
+# ── Phase 7: Bulk Approve ─────────────────────────────────────────────────────
+
+class BulkApproveBody(BaseModel):
+    gap_ids: list[str]
+    send_messages: bool = True
+
+
+@router.post("/approve-bulk", response_model=APIResponse)
+async def approve_bulk_gaps(body: BulkApproveBody):
+    """Phase 7: Approve multiple care gaps in a single staff action."""
+    from module6_commhub.gateway import send_whatsapp
+    from module6_commhub.message_templates import caregap_outreach
+
+    approved = []
+    failed = []
+
+    for gap_id in body.gap_ids:
+        try:
+            gap = await db.care_gaps.find_one({"_id": ObjectId(gap_id)})
+            if not gap:
+                failed.append({"id": gap_id, "reason": "not found"})
+                continue
+
+            await db.care_gaps.update_one(
+                {"_id": ObjectId(gap_id)},
+                {"$set": {"status": "sent", "approved_at": datetime.now(timezone.utc)}}
+            )
+
+            if body.send_messages:
+                patient = await db.patients.find_one({"_id": ObjectId(gap.get("patient_id", ""))}) if gap.get("patient_id") else None
+                if patient and patient.get("phone"):
+                    msg = gap.get("message") or caregap_outreach(
+                        patient.get("name", "Patient"),
+                        gap.get("gap_type", "CARE_REMINDER")
+                    )
+                    send_whatsapp(patient["phone"], msg)
+
+            await publish("caregap.sent", {"gap_id": gap_id, "patient_id": gap.get("patient_id", "")})
+            approved.append(gap_id)
+        except Exception as e:
+            failed.append({"id": gap_id, "reason": str(e)})
+
+    return APIResponse(
+        success=True,
+        data={"approved": approved, "failed": failed},
+        message=f"Bulk approved {len(approved)} gaps. {len(failed)} failed.",
+    )

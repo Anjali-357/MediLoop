@@ -1,272 +1,347 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Users, Filter, Search, Activity, Phone, MonitorSmartphone } from 'lucide-react';
-import { AppContext } from '../../context/AppContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import PatientOnboardingModal from '../../components/PatientOnboardingModal';
 
-const DashboardModule = () => {
-    const { currentDoctor } = useContext(AppContext);
+const API = 'http://localhost:8000';
+const AUTO_REFRESH_MS = 30000;
+
+export default function DoctorDashboard() {
     const [patients, setPatients] = useState([]);
+    const [sessions, setSessions] = useState([]);
+    const [followups, setFollowups] = useState([]);
+    const [careGaps, setCareGaps] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [expandedRows, setExpandedRows] = useState(new Set());
+    const [lastFetch, setLastFetch] = useState(null);
 
-    useEffect(() => {
-        fetchPatients();
-    }, []);
+    // Modal state
+    const [isModalOpen, setModalOpen] = useState(false);
 
-    const fetchPatients = async () => {
+    // Bulk approve state
+    const [selectedGaps, setSelectedGaps] = useState(new Set());
+    const [approving, setApproving] = useState(false);
+
+    const fetchAll = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await fetch('http://localhost:8000/api/identity/patients/dashboard');
-            const result = await response.json();
+            const [pt, sess, fu, gaps] = await Promise.all([
+                fetch(`${API}/api/commhub/patients`).then(r => r.json()),
+                fetch(`${API}/api/commhub/sessions`).then(r => r.json()),
+                fetch(`${API}/api/recoverbot/followups`, { headers: { 'Authorization': '' } }).then(r => r.json()).catch(() => ({ data: [] })),
+                fetch(`${API}/api/caregap/pending`).then(r => r.json()).catch(() => ({ data: [] })),
+            ]);
 
-            if (response.ok && result.success) {
-                setPatients(result.data);
-            } else {
-                throw new Error(result.message || 'Failed to fetch patients');
-            }
-        } catch (err) {
-            console.error("Dashboard fetch error:", err);
-            setError("Could not load patient insights.");
+            if (pt.success) setPatients(pt.data || []);
+            if (sess.success) setSessions(sess.data || []);
+            if (fu.success) setFollowups(fu.data || []);
+            if (gaps && gaps.success) setCareGaps(gaps.data || []);
+
+            setLastFetch(new Date());
+        } catch (e) {
+            console.error(e);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const filteredPatients = patients.filter(pt =>
-        pt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pt.phone.includes(searchTerm)
-    );
+    useEffect(() => {
+        fetchAll();
+        const t = setInterval(fetchAll, AUTO_REFRESH_MS);
+        return () => clearInterval(t);
+    }, [fetchAll]);
 
-    const formatTimestamp = (isoString) => {
-        if (!isoString) return 'Never';
-        const date = new Date(isoString);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
+    // Data Processing 
+    const sessionByPatient = {};
+    sessions.forEach(s => { sessionByPatient[s.patient_id] = s; });
 
-    const toggleRow = (id) => {
-        setExpandedRows(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
+    const followupByPatient = {};
+    followups.forEach(f => { followupByPatient[f.patient_id] = f; });
+
+    const enrichedPatients = patients.map(p => {
+        const f = followupByPatient[p._id];
+        const s = sessionByPatient[p._id];
+        return {
+            ...p,
+            session: s,
+            followup: f,
+            risk: f?.risk_label || 'UNKNOWN',
+            suggested_action: f?.suggested_action || (f?.risk_label === 'HIGH' || f?.risk_label === 'CRITICAL' ? 'Review History' : 'Monitor'),
+            last_active: s?.last_message_ts || p.last_active_at || p.created_at
+        };
+    });
+
+    // 1. Patients Requiring Attention (HIGH or CRITICAL)
+    const attentionPatients = enrichedPatients
+        .filter(p => ['CRITICAL', 'HIGH'].includes(p.risk) || (p.session && (Date.now() - new Date(p.session.last_message_ts).getTime()) > 48 * 3600 * 1000))
+        .sort((a, b) => {
+            if (a.risk === 'CRITICAL' && b.risk !== 'CRITICAL') return -1;
+            if (a.risk !== 'CRITICAL' && b.risk === 'CRITICAL') return 1;
+            return new Date(b.last_active) - new Date(a.last_active);
         });
+
+    // 2. Overview Stats
+    const totalMonitored = patients.length;
+    const highRiskCount = enrichedPatients.filter(p => ['CRITICAL', 'HIGH'].includes(p.risk)).length;
+
+    // For now, proxy "Pain Alerts" via high risk or explicit checking if we had pain_scores
+    const painAlertsCount = enrichedPatients.filter(p => p.session?.last_intent === 'PAIN').length;
+    const pendingGapsCount = careGaps.length;
+
+    // Handlers
+    const handleToggleGap = (id) => {
+        const next = new Set(selectedGaps);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedGaps(next);
+    };
+
+    const handleSelectAllGaps = () => {
+        if (selectedGaps.size === careGaps.length) {
+            setSelectedGaps(new Set());
+        } else {
+            setSelectedGaps(new Set(careGaps.map(g => g._id || g.id)));
+        }
+    };
+
+    const handleBulkApprove = async () => {
+        if (selectedGaps.size === 0) return;
+        setApproving(true);
+        try {
+            await fetch(`${API}/api/caregap/approve-bulk`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gap_ids: Array.from(selectedGaps), send_messages: true })
+            });
+            setSelectedGaps(new Set());
+            fetchAll();
+        } catch (e) {
+            console.error('Bulk approve failed', e);
+        } finally {
+            setApproving(false);
+        }
+    };
+
+    const handleMarkResolved = async (patientId) => {
+        // Optimistic UI update or API call to dismiss alert 
+        // For demo, we just refetch, assuming a separate endpoint exists or we ignore it
+        fetchAll();
     };
 
     if (loading) {
         return (
-            <div className="h-full flex items-center justify-center p-12">
-                <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
-                    <p className="text-surface-600 font-medium">Loading Patient Directory...</p>
-                </div>
+            <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ color: '#10B981', fontSize: '1.2rem', fontFamily: "'Outfit', sans-serif" }}>Loading Clinical Command Center...</div>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="p-8">
-                <div className="bg-red-50 text-red-600 p-4 rounded-xl shadow-sm border border-red-100 flex items-center">
-                    <Activity className="w-5 h-5 mr-2" />
-                    <span className="font-medium">{error}</span>
-                    <button onClick={fetchPatients} className="ml-auto bg-white px-3 py-1 rounded border border-red-200 text-sm hover:bg-red-50">Retry</button>
-                </div>
-            </div>
-        );
+    // ── Styles ────────────────────────────────────────────────────────────────
+    const theme = {
+        bg: 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%)',
+        glass: 'rgba(255, 255, 255, 0.03)',
+        glassBorder: 'rgba(255, 255, 255, 0.1)',
+        primary: '#10B981', // Brand Green
+        primaryHover: '#059669',
+        accentBlue: '#0EA5E9',
+        amber: '#F59E0B',
+        red: '#EF4444',
+        textMain: '#F8FAFB',
+        textMuted: '#94A3B8'
+    };
+
+    const glassCard = {
+        background: theme.glass,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid ${theme.glassBorder}`,
+        borderRadius: '16px',
+        padding: '24px',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+    };
+
+    function timeAgo(dateString) {
+        if (!dateString) return '';
+        const diff = Date.now() - new Date(dateString).getTime();
+        const hrs = Math.floor(diff / 3600000);
+        if (hrs < 1) return 'Just now';
+        return `${hrs}h ago`;
     }
 
     return (
-        <div className="h-full flex flex-col space-y-6">
-
-            {/* Header Banner */}
-            <div className="bg-white rounded-xl shadow-sm border border-surface-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="w-full h-full flex flex-col p-6 overflow-hidden">
+            {/* Header section with Stats */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexShrink: 0 }}>
                 <div>
-                    <h1 className="text-2xl font-bold text-surface-900 flex items-center">
-                        <Users className="w-7 h-7 mr-3 text-primary-600" />
-                        Patient Insights Dashboard
+                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `linear-gradient(135deg, ${theme.primary}, ${theme.accentBlue})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px rgba(16, 185, 129, 0.4)` }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                        </div>
+                        MediLoop
                     </h1>
-                    <p className="text-surface-500 mt-1">High-level overview of mapped MediLoop patients in MongoDB</p>
+                    <p style={{ margin: '4px 0 0 0', color: theme.textMuted, fontSize: '0.9rem' }}>Clinical Command Center · Live</p>
                 </div>
 
-                <div className="flex bg-surface-50 p-3 rounded-lg border border-surface-200 items-center">
-                    <div className="bg-white p-2 rounded shadow-sm mr-3">
-                        <MonitorSmartphone className="w-5 h-5 text-surface-400" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-surface-500 font-medium uppercase tracking-wider">Total Active</p>
-                        <p className="text-lg font-bold text-surface-900 leading-none mt-1">{patients.length}</p>
-                    </div>
-                </div>
+                <button
+                    onClick={() => setModalOpen(true)}
+                    style={{
+                        background: `linear-gradient(135deg, ${theme.primary}, ${theme.primaryHover})`,
+                        color: '#fff', border: 'none', borderRadius: '12px',
+                        padding: '12px 24px', fontSize: '1rem', fontWeight: 600,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                        boxShadow: `0 8px 24px rgba(16, 185, 129, 0.25)`,
+                        transition: 'transform 0.2s, box-shadow 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    New Consultation
+                </button>
             </div>
 
-            {/* Controls Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="relative w-full sm:max-w-md">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-surface-400" />
-                    </div>
-                    <input
-                        type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-surface-300 rounded-lg leading-5 bg-white placeholder-surface-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition-colors"
-                        placeholder="Search by name or phone number..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex items-center space-x-2">
-                    <button className="btn-secondary rounded-lg px-3 py-2 text-sm shadow-sm">
-                        <Filter className="w-4 h-4 mr-2 inline-block" />
-                        Filter Directory
-                    </button>
-                </div>
-            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
-            {/* Patient Grid/Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-surface-200 overflow-hidden flex-1">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-surface-200">
-                        <thead className="bg-surface-50 sticky top-0">
-                            <tr>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">
-                                    Patient Profile
-                                </th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">
-                                    Metrics
-                                </th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">
-                                    Identity Source
-                                </th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">
-                                    Last Active
-                                </th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col" className="px-6 py-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-surface-100">
-                            {filteredPatients.length > 0 ? (
-                                filteredPatients.map((pt) => {
-                                    // Status pill styling
-                                    let statusColor = "bg-surface-100 text-surface-800 ring-surface-500/10";
-                                    if (pt.onboarding_status === 'completed') statusColor = "bg-emerald-50 text-emerald-700 ring-emerald-600/20";
-                                    else if (pt.onboarding_status === 'pending') statusColor = "bg-amber-50 text-amber-700 ring-amber-600/20";
+                {/* Section 3: Active Monitoring Overview (Moved to top for dashboard feel) */}
+                <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+                    {[
+                        { label: 'Patients Monitored', value: totalMonitored, color: theme.accentBlue },
+                        { label: 'High-Risk', value: highRiskCount, color: theme.red },
+                        { label: 'Pain Alerts', value: painAlertsCount, color: theme.amber },
+                        { label: 'Care Gaps', value: pendingGapsCount, color: theme.primary }
+                    ].map((stat, i) => (
+                        <div key={i} style={{ ...glassCard, display: 'flex', flexDirection: 'column', padding: '24px' }}>
+                            <span style={{ color: theme.textMuted, fontSize: '0.9rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '8px', color: stat.color, textShadow: `0 0 20px ${stat.color}40` }}>
+                                {stat.value}
+                            </div>
+                        </div>
+                    ))}
+                </section>
 
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+
+                    {/* Section 1: Patients Requiring Attention */}
+                    <section>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.amber, boxShadow: `0 0 10px ${theme.amber}` }}></span>
+                            Patients Requiring Attention
+                        </h2>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {attentionPatients.length === 0 ? (
+                                <div style={{ ...glassCard, textAlign: 'center', color: theme.textMuted, padding: '40px' }}>
+                                    No patients require immediate attention.
+                                </div>
+                            ) : attentionPatients.map(p => {
+                                const isCritical = p.risk === 'CRITICAL';
+                                const borderColor = isCritical ? theme.red : theme.amber;
+                                const isUnresponsive = !isCritical && p.risk !== 'HIGH'; // Meaning it was caught by 48h rule
+
+                                return (
+                                    <div key={p._id} style={{
+                                        ...glassCard,
+                                        borderLeft: `4px solid ${isUnresponsive ? theme.textMuted : borderColor}`,
+                                        position: 'relative', overflow: 'hidden',
+                                        transition: 'transform 0.2s', cursor: 'pointer'
+                                    }}
+                                        onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    {isCritical && <span style={{ color: theme.red }}>🚨</span>}
+                                                    {isUnresponsive && <span style={{ color: theme.amber }}>⏳</span>}
+                                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{p.name}</h3>
+                                                </div>
+                                                <p style={{ margin: '4px 0 0 0', color: theme.textMuted, fontSize: '0.85rem' }}>
+                                                    {isUnresponsive ? 'Unresponsive > 48h' : `${p.risk} Recovery Risk`} · {timeAgo(p.last_active)}
+                                                </p>
+                                            </div>
+
+                                            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', color: theme.textMain }}>
+                                                Suggested Action: <span style={{ color: borderColor, fontWeight: 600 }}>{p.suggested_action}</span>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+                                            <button style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                                                View Details
+                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); handleMarkResolved(p._id); }} style={{ flex: 1, background: 'transparent', border: `1px solid ${theme.glassBorder}`, padding: '10px', borderRadius: '8px', color: theme.textMuted, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                                                Mark Resolved
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+
+                    {/* Section 2: Pending Preventive Actions */}
+                    <section>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }}></span>
+                            Pending Preventive Actions
+                        </h2>
+
+                        <div style={{ ...glassCard, padding: 0, overflow: 'hidden' }}>
+                            <div style={{ padding: '20px', borderBottom: `1px solid ${theme.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                                <div style={{ fontSize: '0.9rem', color: theme.textMuted }}>
+                                    <strong style={{ color: theme.textMain }}>{careGaps.length}</strong> patients need outreach today
+                                </div>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <button onClick={handleSelectAllGaps} style={{ background: 'transparent', border: 'none', color: theme.accentBlue, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 500 }}>
+                                        {selectedGaps.size === careGaps.length && careGaps.length > 0 ? 'Deselect All' : 'Select All'}
+                                    </button>
+                                    <button
+                                        onClick={handleBulkApprove}
+                                        disabled={selectedGaps.size === 0 || approving}
+                                        style={{
+                                            background: selectedGaps.size > 0 ? theme.primary : 'rgba(255,255,255,0.1)',
+                                            border: 'none', color: '#fff', padding: '6px 16px', borderRadius: '6px',
+                                            fontSize: '0.85rem', fontWeight: 600, cursor: selectedGaps.size > 0 ? 'pointer' : 'not-allowed',
+                                            transition: 'background 0.2s'
+                                        }}
+                                    >
+                                        {approving ? 'Approving...' : `Approve (${selectedGaps.size})`}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                                {careGaps.length === 0 ? (
+                                    <div style={{ padding: '40px', textAlign: 'center', color: theme.textMuted }}>
+                                        No pending care gaps.
+                                    </div>
+                                ) : careGaps.map(gap => {
+                                    const id = gap._id || gap.id;
+                                    const pt = patients.find(p => p._id === gap.patient_id);
                                     return (
-                                        <React.Fragment key={pt._id}>
-                                            <tr onClick={() => toggleRow(pt._id)} className="hover:bg-primary-50/50 transition-colors cursor-pointer">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center border border-primary-300">
-                                                            <span className="text-primary-800 font-bold text-sm">
-                                                                {pt.name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        <div className="ml-4">
-                                                            <div className="text-sm font-semibold text-surface-900">{pt.name}</div>
-                                                            <div className="text-sm text-surface-500 flex items-center mt-0.5">
-                                                                <Phone className="w-3 h-3 mr-1" />
-                                                                {pt.phone}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-surface-900">Age: {pt.age}</div>
-                                                    <div className="text-sm text-surface-500">{pt.language}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-surface-900 capitalize font-medium">
-                                                        {pt.source ? pt.source.replace('_', ' ') : 'Unknown'}
-                                                    </div>
-                                                    <div className="text-sm text-surface-500 mt-0.5">
-                                                        WhatsApp Opt-in: {pt.whatsapp_opt_in ? 'Yes' : 'No'}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-surface-600">
-                                                    {formatTimestamp(pt.last_active_at)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusColor} capitalize`}>
-                                                        {pt.onboarding_status || 'Unknown'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <svg className={`w-5 h-5 text-surface-400 transition-transform ${expandedRows.has(pt._id) ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </td>
-                                            </tr>
-                                            {expandedRows.has(pt._id) && pt.insights && (
-                                                <tr className="bg-surface-50 border-b border-surface-200">
-                                                    <td colSpan="6" className="px-8 py-6">
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                            {/* Clinical Documentation */}
-                                                            <div className="bg-white p-4 border border-surface-200 rounded-lg shadow-sm">
-                                                                <h4 className="text-sm font-bold text-surface-900 mb-3 border-b border-surface-100 pb-2">Latest Consultation (SOAP)</h4>
-                                                                {pt.insights.latest_consultation && pt.insights.latest_consultation.soap_note ? (
-                                                                    <div className="space-y-2 text-sm text-surface-700">
-                                                                        <p><strong className="text-surface-900">Assessment:</strong> {pt.insights.latest_consultation.soap_note.assessment}</p>
-                                                                        <p><strong className="text-surface-900">Plan:</strong> {pt.insights.latest_consultation.soap_note.plan}</p>
-                                                                        <p className="text-xs text-surface-400 mt-2">{formatTimestamp(pt.insights.latest_consultation.created_at)}</p>
-                                                                    </div>
-                                                                ) : <p className="text-sm text-surface-500 italic">No clinical documentation available.</p>}
-                                                            </div>
-
-                                                            {/* Active Alerts (RecoverBot) */}
-                                                            <div className="bg-white p-4 border border-red-100 rounded-lg shadow-sm">
-                                                                <h4 className="text-sm font-bold text-red-700 mb-3 border-b border-red-50 pb-2">RecoverBot Risk Alert</h4>
-                                                                {pt.insights.latest_followup ? (
-                                                                    <div className="space-y-2 text-sm">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${pt.insights.latest_followup.risk_label === 'CRITICAL' ? 'bg-red-600 text-white' : pt.insights.latest_followup.risk_label === 'HIGH' ? 'bg-orange-500 text-white' : 'bg-green-100 text-green-800'}`}>
-                                                                                {pt.insights.latest_followup.risk_label} RISK
-                                                                            </span>
-                                                                            <span className="text-surface-600 font-medium tracking-wide">Score: {pt.insights.latest_followup.risk_score}</span>
-                                                                        </div>
-                                                                        <p className="text-surface-700 mt-1 capitalize">Status: {pt.insights.latest_followup.status}</p>
-                                                                        <p className="text-xs text-surface-400 mt-2">{formatTimestamp(pt.insights.latest_followup.created_at)}</p>
-                                                                    </div>
-                                                                ) : <p className="text-sm text-surface-500 italic">No active post-op followups.</p>}
-                                                            </div>
-
-                                                            {/* Pending Actions (Care Gaps) */}
-                                                            <div className="bg-white p-4 border border-amber-100 rounded-lg shadow-sm">
-                                                                <h4 className="text-sm font-bold text-amber-700 mb-3 border-b border-amber-50 pb-2">Pending Care Gaps</h4>
-                                                                {pt.insights.pending_care_gaps && pt.insights.pending_care_gaps.length > 0 ? (
-                                                                    <ul className="space-y-3">
-                                                                        {pt.insights.pending_care_gaps.map(gap => (
-                                                                            <li key={gap._id} className="text-sm">
-                                                                                <p className="font-semibold text-surface-900 capitalize">{gap.gap_type.replace('_', ' ')}</p>
-                                                                                <p className="text-surface-600 truncate mt-0.5" title={gap.outreach_msg}>"{gap.outreach_msg}"</p>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                ) : <p className="text-sm text-surface-500 italic">Patient is compliant.</p>}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
+                                        <div key={id} style={{ padding: '16px 20px', borderBottom: `1px solid ${theme.glassBorder}`, display: 'flex', alignItems: 'center', gap: '16px', transition: 'background 0.2s', background: selectedGaps.has(id) ? 'rgba(16, 185, 129, 0.05)' : 'transparent' }} onClick={() => handleToggleGap(id)}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedGaps.has(id)}
+                                                onChange={() => { }}
+                                                style={{ width: '18px', height: '18px', accentColor: theme.primary, cursor: 'pointer' }}
+                                            />
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{pt?.name || 'Unknown Patient'}</div>
+                                                <div style={{ color: theme.textMuted, fontSize: '0.8rem', marginTop: '2px' }}>
+                                                    {gap.gap_type.replace('_', ' ').toUpperCase()} · Generated {timeAgo(gap.created_at)}
+                                                </div>
+                                            </div>
+                                            <button style={{ background: 'transparent', border: `1px solid ${theme.glassBorder}`, color: theme.textMuted, padding: '4px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); /* Expand inline logic */ }}>
+                                                Review Individually
+                                            </button>
+                                        </div>
                                     );
-                                })
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className="px-6 py-12 text-center">
-                                        <Users className="mx-auto h-12 w-12 text-surface-300 mb-3" />
-                                        <p className="text-surface-500 font-medium">No patient records found matching your query.</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                })}
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
+
+            {/* Float Modal */}
+            <PatientOnboardingModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
         </div>
     );
-};
-
-export default DashboardModule;
+}

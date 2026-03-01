@@ -8,6 +8,16 @@ export const AppProvider = ({ children }) => {
 
     const [authToken, setAuthToken] = useState("mock_jwt_token_for_hackathon");
     const [ws, setWs] = useState(null);
+    const [alerts, setAlerts] = useState([]);
+
+    const addAlert = (alert) => {
+        const id = Date.now() + Math.random().toString();
+        setAlerts(prev => [...prev, { ...alert, id }]);
+    };
+
+    const removeAlert = (id) => {
+        setAlerts(prev => prev.filter(a => a.id !== id));
+    };
 
     useEffect(() => {
         // Note: Developer 2 owns the /api/recoverbot/ws/alerts endpoint
@@ -24,6 +34,15 @@ export const AppProvider = ({ children }) => {
                 const event = JSON.parse(e.data);
                 console.log("Shared WS Event Received:", event);
                 // Handle global events if needed (like popup alerts)
+                if (event.type === 'alert' || event.topic === 'recoverbot.flagged' || event.topic === 'commhub.emergency') {
+                    addAlert({
+                        title: event.topic === 'commhub.emergency' ? 'Emergency Request' : 'High Risk Flag',
+                        message: event.data?.reason || event.data?.message || JSON.stringify(event.data),
+                        patient_name: event.data?.patient_name || 'Patient',
+                        risk: event.topic === 'commhub.emergency' ? 'CRITICAL' : 'HIGH',
+                        suggested_action: event.data?.suggested_action || 'Review patient immediately in Control Center.'
+                    });
+                }
             } catch (err) {
                 console.error("Failed to parse WS message", e.data);
             }
@@ -43,7 +62,10 @@ export const AppProvider = ({ children }) => {
             currentDoctor,
             setCurrentDoctor,
             authToken,
-            ws
+            ws,
+            alerts,
+            addAlert,
+            removeAlert
         }}>
             {children}
         </AppContext.Provider>

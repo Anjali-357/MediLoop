@@ -10,7 +10,7 @@ import google.generativeai as genai
 genai.configure(api_key=os.getenv("GEMINI_API_KEY", ""))
 _model = genai.GenerativeModel("gemini-2.5-flash")
 
-VALID_INTENTS = {"PAIN", "FOLLOWUP", "CARE_GAP", "GENERAL_QUERY", "EMERGENCY"}
+VALID_INTENTS = {"PAIN", "FOLLOWUP", "CARE_GAP", "GENERAL_QUERY", "EMERGENCY", "APPOINTMENT_REQUEST"}
 
 INTENT_DESCRIPTIONS = {
     "PAIN": "ONLY for pediatric patients (under 6 years old) who cannot verbally express pain — parent/caregiver reports symptoms, crying, discomfort, or distress on behalf of the child",
@@ -18,6 +18,7 @@ INTENT_DESCRIPTIONS = {
     "CARE_GAP": "Patient mentions they haven't visited the clinic, missed a lab test, overdue checkup, or hasn't seen a doctor recently",
     "GENERAL_QUERY": "General health question, greeting, or unrelated query",
     "EMERGENCY": "Patient or caregiver expresses urgency, severe symptoms, difficulty breathing, chest pain, or life-threatening situation",
+    "APPOINTMENT_REQUEST": "Patient explicitly wants to see a doctor, book/schedule an appointment, or asks when they can come in for a visit",
 }
 
 
@@ -98,4 +99,5 @@ INTENT_TO_MODULE = {
     "CARE_GAP": "caregap",
     "GENERAL_QUERY": "chatbot",
     "EMERGENCY": "emergency",
+    "APPOINTMENT_REQUEST": "appointment",
 }

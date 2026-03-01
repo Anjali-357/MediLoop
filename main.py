@@ -49,6 +49,12 @@ try:
 except ImportError:
     commhub_router = None
 
+try:
+    from patient_resolver import router as patient_router
+except Exception as e:
+    print(f"Failed to load patient_resolver: {e}")
+    patient_router = None
+
 app = FastAPI(title='MediLoop')
 
 # CORS settings
@@ -75,6 +81,8 @@ if orchestrator_router:
     app.include_router(orchestrator_router, prefix='/api/orchestrator')
 if commhub_router:
     app.include_router(commhub_router, prefix='/api/commhub')
+if patient_router:
+    app.include_router(patient_router, prefix='/api/patient')
 
 @app.on_event("startup")
 async def startup_event():
@@ -111,6 +119,15 @@ async def startup_event():
         print("✅ CommHub event listeners started")
     except ImportError as e:
         print(f"Failed to load CommHub: {e}")
+
+    try:
+        import asyncio
+        from scribe_enricher import start_enricher
+        asyncio.create_task(start_enricher())
+        print("✅ Scribe Enricher started")
+    except Exception as e:
+        print(f"Failed to load Scribe Enricher: {e}")
+
 
 
 @app.get("/")

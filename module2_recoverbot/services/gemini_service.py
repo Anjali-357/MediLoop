@@ -93,3 +93,19 @@ async def extract_features(conversation_log: list[dict], age: int, days_since_di
     features["age"] = age
     features["days_since_discharge"] = days_since_discharge
     return features
+
+
+async def generate_suggested_action(risk_label: str, features: dict, diagnosis: str) -> str:
+    """Generate a short, clinical suggested action for the doctor based on patient features."""
+    prompt = (
+        f"A patient recovering from {diagnosis} has been flagged as {risk_label} risk.\n"
+        f"Extracted features: {json.dumps(features)}\n"
+        f"Provide a single, concise clinical suggested action for the doctor (max 8 words). "
+        f"Example: 'Call patient urgently', 'Review wound photos', 'Titrate pain meds'."
+        f"Return ONLY the suggested action text."
+    )
+    try:
+        response = await _model.generate_content_async(prompt)
+        return response.text.strip().replace("\"", "").replace("'", "")
+    except Exception as e:
+        return "Review patient history"

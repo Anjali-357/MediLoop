@@ -4,6 +4,7 @@ import { Users, Calendar, AlertCircle, Save, CheckCircle } from 'lucide-react';
 import RecordingPanel from './RecordingPanel';
 import SOAPEditor from './SOAPEditor';
 import ICDSelector from './ICDSelector';
+import PatientContextPanel from '../../components/PatientContextPanel';
 
 const ScribeAIModule = () => {
     const { currentPatient, currentDoctor } = useContext(AppContext);
@@ -101,17 +102,20 @@ const ScribeAIModule = () => {
                         <Users className="w-6 h-6 text-primary-600" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-surface-900">{currentPatient.name}</h1>
-                        <div className="flex items-center text-sm text-surface-500 mt-1 space-x-4">
-                            <span>ID: <span className="font-mono text-surface-700">{currentPatient._id || currentPatient.id}</span></span>
-                            <span>Age: {currentPatient.age}</span>
-                            <span>Language: {currentPatient.language}</span>
+                        <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Active Consultation</h1>
+                        <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-sm font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-md">
+                                {currentPatient.name}
+                            </span>
+                            <span className="text-sm text-surface-500">
+                                (Phone: {currentPatient.phone || 'N/A'})
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div className="text-right">
-                    <p className="text-sm font-medium text-surface-900">{currentDoctor.name}</p>
-                    <p className="text-xs text-surface-500">{new Date().toLocaleDateString()}</p>
+                    <div className="text-right">
+                        <p className="text-sm font-medium text-surface-900">{currentDoctor.name}</p>
+                        <p className="text-xs text-surface-500">{new Date().toLocaleDateString()}</p>
+                    </div>
                 </div>
             </div>
 
@@ -124,6 +128,8 @@ const ScribeAIModule = () => {
                         setTranscript={setTranscript}
                         onRecordingStop={handleRecordingStop}
                     />
+                    <PatientContextPanel patientId={currentPatient._id || currentPatient.id} />
+
                 </div>
 
                 {/* Right Column: SOAP & ICD */}

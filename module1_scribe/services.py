@@ -5,7 +5,8 @@ import asyncio
 import tempfile
 try:
     import ollama
-    ollama_client = ollama.AsyncClient(host=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
+    # If running in Docker on Mac/Windows, host.docker.internal routes to the host machine's localhost
+    ollama_client = ollama.AsyncClient(host=os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434"))
 except ImportError:
     ollama_client = None
 
@@ -35,7 +36,11 @@ async def process_audio_chunk(data: bytes, session_id: str) -> str:
         # Transcribe runs synchronously; might block event loop if not careful, 
         # but for hackathon, direct call is acceptable or we run it in executor.
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, whisper_model.transcribe, temp_path)
+        
+        def _transcribe():
+            return whisper_model.transcribe(temp_path, fp16=False)
+            
+        result = await loop.run_in_executor(None, _transcribe)
         
         # Cleanup
         os.remove(temp_path)
