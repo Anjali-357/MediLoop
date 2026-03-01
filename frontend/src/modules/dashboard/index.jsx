@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../../context/AppContext';
 import PatientOnboardingModal from '../../components/PatientOnboardingModal';
 
 const API = 'http://localhost:8000';
@@ -15,6 +17,10 @@ export default function DoctorDashboard() {
     // Modal state
     const [isModalOpen, setModalOpen] = useState(false);
 
+    // Context & Navigation
+    const { setCurrentPatient, setCurrentDoctor, authToken } = useContext(AppContext);
+    const navigate = useNavigate();
+
     // Bulk approve state
     const [selectedGaps, setSelectedGaps] = useState(new Set());
     const [approving, setApproving] = useState(false);
@@ -24,8 +30,8 @@ export default function DoctorDashboard() {
             const [pt, sess, fu, gaps] = await Promise.all([
                 fetch(`${API}/api/commhub/patients`).then(r => r.json()),
                 fetch(`${API}/api/commhub/sessions`).then(r => r.json()),
-                fetch(`${API}/api/recoverbot/followups`, { headers: { 'Authorization': '' } }).then(r => r.json()).catch(() => ({ data: [] })),
-                fetch(`${API}/api/caregap/pending`).then(r => r.json()).catch(() => ({ data: [] })),
+                fetch(`${API}/api/recoverbot/followups`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.json()).catch(() => ({ data: [] })),
+                fetch(`${API}/api/caregap/pending`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.json()).catch(() => ({ data: [] })),
             ]);
 
             if (pt.success) setPatients(pt.data || []);
@@ -67,14 +73,15 @@ export default function DoctorDashboard() {
         };
     });
 
-    // 1. Patients Requiring Attention (HIGH or CRITICAL)
-    const attentionPatients = enrichedPatients
-        .filter(p => ['CRITICAL', 'HIGH'].includes(p.risk) || (p.session && (Date.now() - new Date(p.session.last_message_ts).getTime()) > 48 * 3600 * 1000))
-        .sort((a, b) => {
-            if (a.risk === 'CRITICAL' && b.risk !== 'CRITICAL') return -1;
-            if (a.risk !== 'CRITICAL' && b.risk === 'CRITICAL') return 1;
-            return new Date(b.last_active) - new Date(a.last_active);
-        });
+    // 1. All Patients (Sort by Risk then Activity)
+    const displayPatients = enrichedPatients.sort((a, b) => {
+        const riskWeight = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1, 'UNKNOWN': 0 };
+        const weightA = riskWeight[a.risk] || 0;
+        const weightB = riskWeight[b.risk] || 0;
+
+        if (weightA !== weightB) return weightB - weightA;
+        return new Date(b.last_active) - new Date(a.last_active);
+    });
 
     // 2. Overview Stats
     const totalMonitored = patients.length;
@@ -122,6 +129,29 @@ export default function DoctorDashboard() {
         // Optimistic UI update or API call to dismiss alert 
         // For demo, we just refetch, assuming a separate endpoint exists or we ignore it
         fetchAll();
+    };
+
+    const handleViewPatient = async (patient) => {
+        try {
+            // Provide a mock doctor context for testing Scribe since it requires one
+            const loginRes = await fetch(`${API}/api/identity/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: "System Admin", age: 40 }),
+            });
+            const loginData = await loginRes.json();
+
+            if (loginRes.ok && loginData.success) {
+                setCurrentDoctor(loginData.doctor);
+            } else {
+                setCurrentDoctor({ name: "Dr. Aryan Patel", id: "doc_123" });
+            }
+        } catch (e) {
+            setCurrentDoctor({ name: "Dr. Aryan Patel", id: "doc_123" });
+        }
+
+        setCurrentPatient(patient);
+        navigate('/patient');
     };
 
     if (loading) {
@@ -217,19 +247,19 @@ export default function DoctorDashboard() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
 
-                    {/* Section 1: Patients Requiring Attention */}
+                    {/* Section 1: All Patients */}
                     <section>
                         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.amber, boxShadow: `0 0 10px ${theme.amber}` }}></span>
-                            Patients Requiring Attention
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.accentBlue, boxShadow: `0 0 10px ${theme.accentBlue}` }}></span>
+                            All Patients
                         </h2>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {attentionPatients.length === 0 ? (
+                            {displayPatients.length === 0 ? (
                                 <div style={{ ...glassCard, textAlign: 'center', color: theme.textMuted, padding: '40px' }}>
-                                    No patients require immediate attention.
+                                    No patients found.
                                 </div>
-                            ) : attentionPatients.map(p => {
+                            ) : displayPatients.map(p => {
                                 const isCritical = p.risk === 'CRITICAL';
                                 const borderColor = isCritical ? theme.red : theme.amber;
                                 const isUnresponsive = !isCritical && p.risk !== 'HIGH'; // Meaning it was caught by 48h rule
@@ -262,11 +292,11 @@ export default function DoctorDashboard() {
                                         </div>
 
                                         <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                                            <button style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
-                                                View Details
+                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                                                Patient Profile
                                             </button>
-                                            <button onClick={(e) => { e.stopPropagation(); handleMarkResolved(p._id); }} style={{ flex: 1, background: 'transparent', border: `1px solid ${theme.glassBorder}`, padding: '10px', borderRadius: '8px', color: theme.textMuted, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                                                Mark Resolved
+                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: `linear-gradient(135deg, ${theme.primary}, ${theme.primaryHover})`, border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'box-shadow 0.2s' }} onMouseOver={e => e.currentTarget.style.boxShadow = `0 4px 12px rgba(16, 185, 129, 0.3)`} onMouseOut={e => e.currentTarget.style.boxShadow = 'none'}>
+                                                View Consults
                                             </button>
                                         </div>
                                     </div>

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link, NavLink } from 'react-router-dom'
 import { AppProvider, AppContext } from './context/AppContext'
 import ScribeAIModule from './modules/scribe'
 import RecoverbotModule from './modules/recoverbot'
@@ -7,15 +7,10 @@ import PainscanModule from './modules/painscan'
 import CareGapModule from './modules/caregap'
 import DashboardModule from './modules/dashboard'
 import ControlCenter from './modules/control'
+import PatientModule from './modules/patient'
 import AlertToast from './components/AlertToast'
 
-const ProtectedRoute = ({ children }) => {
-  const { currentPatient } = useContext(AppContext);
-  if (!currentPatient) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return children;
-};
+// Removed ProtectedRoute so users can view pages without starting a consultation
 
 function AppContent() {
   const { currentPatient, alerts, removeAlert } = useContext(AppContext);
@@ -40,15 +35,18 @@ function AppContent() {
                   <span className="text-xl font-bold text-primary-600 tracking-tight">MediLoop</span>
                 </div>
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                  <Link to="/scribe" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                    🎙️ ScribeAI
-                  </Link>
-                  <Link to="/dashboard" className="border-primary-500 text-surface-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                  <NavLink to="/dashboard" className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive ? 'border-primary-500 text-surface-900' : 'border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700'}`}>
                     📊 Dashboard
-                  </Link>
-                  <Link to="/control" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                  </NavLink>
+                  <NavLink to="/scribe" className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive ? 'border-primary-500 text-surface-900' : 'border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700'}`}>
+                    🎙️ ScribeAI
+                  </NavLink>
+                  <NavLink to="/recoverbot" className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive ? 'border-primary-500 text-surface-900' : 'border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700'}`}>
+                    🤖 RecoverBot
+                  </NavLink>
+                  <NavLink to="/control" className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive ? 'border-primary-500 text-surface-900' : 'border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700'}`}>
                     ⚡ Control Center
-                  </Link>
+                  </NavLink>
                 </div>
               </div>
             </div>
@@ -58,10 +56,11 @@ function AppContent() {
         <main className="w-full flex-1 flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-surface-50">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/scribe" element={<ProtectedRoute><ScribeAIModule /></ProtectedRoute>} />
-            <Route path="/recoverbot" element={<ProtectedRoute><RecoverbotModule /></ProtectedRoute>} />
-            <Route path="/painscan" element={<ProtectedRoute><PainscanModule /></ProtectedRoute>} />
-            <Route path="/caregap" element={<ProtectedRoute><CareGapModule /></ProtectedRoute>} />
+            <Route path="/patient" element={<PatientModule />} />
+            <Route path="/scribe" element={<ScribeAIModule />} />
+            <Route path="/recoverbot" element={<RecoverbotModule />} />
+            <Route path="/painscan" element={<PainscanModule />} />
+            <Route path="/caregap" element={<CareGapModule />} />
             <Route path="/dashboard" element={<DashboardModule />} />
             <Route path="/control" element={<ControlCenter />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

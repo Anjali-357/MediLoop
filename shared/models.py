@@ -151,10 +151,10 @@ class PainScoreOut(MongoBaseModel):
 class CareGapOut(MongoBaseModel):
     patient_id: str
     gap_type: str
-    outreach_msg: str
+    outreach_msg: str = ""
     status: str
-    priority: int
-    flagged_at: datetime
+    priority: int = 1
+    flagged_at: datetime = Field(default_factory=datetime.utcnow)
     sent_at: Optional[datetime] = None
 
 

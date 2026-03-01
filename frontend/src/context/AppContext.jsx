@@ -3,8 +3,18 @@ import React, { createContext, useState, useEffect } from 'react';
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-    const [currentPatient, setCurrentPatient] = useState(null);
-    const [currentDoctor, setCurrentDoctor] = useState(null);
+    const [currentPatient, setCurrentPatient] = useState({
+        _id: "demo_patient_1",
+        id: "demo_patient_1",
+        name: "Demo Patient",
+        phone: "+910000000000",
+        age: 30
+    });
+    const [currentDoctor, setCurrentDoctor] = useState({
+        _id: "demo_doc_1",
+        id: "demo_doc_1",
+        name: "Dr. Smith"
+    });
 
     const [authToken, setAuthToken] = useState("mock_jwt_token_for_hackathon");
     const [ws, setWs] = useState(null);
