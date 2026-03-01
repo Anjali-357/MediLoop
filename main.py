@@ -27,6 +27,11 @@ try:
 except ImportError:
     caregap_router = None
 
+try:
+    from module5_orchestrator.router import router as orchestrator_router
+except ImportError:
+    orchestrator_router = None
+
 app = FastAPI(title='MediLoop')
 
 # CORS settings
@@ -47,6 +52,8 @@ if painscan_router:
     app.include_router(painscan_router, prefix='/api/painscan')
 if caregap_router:
     app.include_router(caregap_router, prefix='/api/caregap')
+if orchestrator_router:
+    app.include_router(orchestrator_router, prefix='/api/orchestrator')
 
 @app.on_event("startup")
 async def startup_event():
@@ -67,6 +74,12 @@ async def startup_event():
         print("✅ CareGap events and scheduler started")
     except ImportError as e:
         print(f"Failed to load CareGap: {e}")
+
+    try:
+        from module5_orchestrator.router import router as _o
+        print("✅ Orchestrator (AI Intent Router) started")
+    except ImportError as e:
+        print(f"Failed to load Orchestrator: {e}")
 
 @app.get("/")
 def read_root():

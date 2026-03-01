@@ -5,6 +5,7 @@ import ScribeAIModule from './modules/scribe'
 import RecoverbotModule from './modules/recoverbot'
 import PainscanModule from './modules/painscan'
 import CareGapModule from './modules/caregap'
+import OrchestratorModule from './modules/orchestrator'
 
 function App() {
   return (
@@ -32,6 +33,9 @@ function App() {
                     <a href="/caregap" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                       CareGap
                     </a>
+                    <a href="/orchestrator" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                      🧠 Orchestrator
+                    </a>
                   </div>
                 </div>
               </div>
@@ -45,6 +49,7 @@ function App() {
               <Route path="/recoverbot" element={<RecoverbotModule />} />
               <Route path="/painscan" element={<PainscanModule />} />
               <Route path="/caregap" element={<CareGapModule />} />
+              <Route path="/orchestrator" element={<OrchestratorModule />} />
               <Route path="*" element={
                 <div className="text-center py-12">
                   <h2 className="text-base font-semibold text-primary-600">404</h2>

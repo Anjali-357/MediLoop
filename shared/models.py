@@ -136,3 +136,13 @@ class CareGapOut(MongoBaseModel):
     priority: int
     flagged_at: datetime
     sent_at: Optional[datetime] = None
+
+
+class AIDecisionOut(MongoBaseModel):
+    patient_id: str
+    intent: str
+    confidence: float
+    reasoning: str
+    suggested_module: str
+    trigger_source: str
+    created_at: datetime
