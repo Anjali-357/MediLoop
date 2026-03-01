@@ -3,14 +3,14 @@ import React, { useEffect, useState } from 'react';
 const API = 'http://localhost:8000';
 
 const theme = {
-    bg: 'transparent',
-    glass: 'rgba(255, 255, 255, 0.03)',
-    glassBorder: 'rgba(255, 255, 255, 0.1)',
+    bg: '#F8FAFC',
+    glass: '#FFFFFF',
+    glassBorder: '#E2E8F0',
     primary: '#10B981', // Brand Green
     amber: '#F59E0B',
     red: '#EF4444',
-    textMain: '#F8FAFB',
-    textMuted: '#94A3B8'
+    textMain: '#0F172A',
+    textMuted: '#64748B'
 };
 
 const RISK_COLORS = {
@@ -50,16 +50,14 @@ export default function PatientContextPanel({ patientId }) {
 
     return (
         <div style={{
-            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
+            background: theme.bg,
             border: `1px solid ${theme.glassBorder}`,
             borderRadius: '16px',
             padding: '24px',
             marginTop: '24px',
             fontFamily: "'Outfit', 'Inter', sans-serif",
             color: theme.textMain,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
             flex: 1,
             display: 'flex',
             flexDirection: 'column'

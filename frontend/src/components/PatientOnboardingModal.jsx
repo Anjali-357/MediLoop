@@ -4,13 +4,13 @@ import { AppContext } from '../context/AppContext';
 
 const API = 'http://localhost:8000';
 
-export default function PatientOnboardingModal({ isOpen, onClose }) {
+export default function PatientOnboardingModal({ isOpen, onClose, onCreated }) {
     const [phone, setPhone] = useState('');
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const { setCurrentPatient, setCurrentDoctor } = useContext(AppContext);
+    const { setCurrentPatient, setCurrentDoctor, currentDoctor } = useContext(AppContext);
     const navigate = useNavigate();
 
     if (!isOpen) return null;
@@ -27,11 +27,15 @@ export default function PatientOnboardingModal({ isOpen, onClose }) {
         try {
             const normalizedPhone = phone.trim().startsWith('+') ? phone.trim() : `+91${phone.trim()}`;
 
-            // 1. Resolve Patient
+            // 1. Resolve Patient (Single API Call)
             const checkRes = await fetch(`${API}/api/patient/resolve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: normalizedPhone, name: name.trim() }),
+                body: JSON.stringify({
+                    phone: normalizedPhone,
+                    name: name.trim(),
+                    doctor_id: currentDoctor?._id || currentDoctor?.id || "demo_doc_1"
+                }),
             });
             const checkData = await checkRes.json();
 
@@ -39,53 +43,19 @@ export default function PatientOnboardingModal({ isOpen, onClose }) {
                 throw new Error(checkData.message || 'Failed to resolve patient');
             }
 
-            // We need a Doctor Context for Scribe. Let's just login a mock Doctor
-            const loginRes = await fetch(`${API}/api/identity/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: "System Admin", age: 40 }),
+            // Set the patient in context
+            setCurrentPatient({
+                _id: checkData.data.patient_id,
+                id: checkData.data.patient_id,
+                name: checkData.data.name,
+                phone: checkData.data.phone,
+                age: checkData.data.age || 30, // Default mock age if missing
+                chronic_conditions: checkData.data.chronic_conditions || []
             });
-            const loginData = await loginRes.json();
 
-            if (loginRes.ok && loginData.success) {
-                setCurrentDoctor(loginData.doctor);
+            if (onCreated) {
+                onCreated();
             }
-
-            // If existing, parse the patient data returned from the resolver
-            if (checkData.data.status === 'existing') {
-                setCurrentPatient({
-                    _id: checkData.data.patient_id,
-                    id: checkData.data.patient_id,
-                    name: checkData.data.name,
-                    phone: checkData.data.phone,
-                    age: checkData.data.age || 30,
-                    chronic_conditions: checkData.data.chronic_conditions || []
-                });
-            } else {
-                // If new, use the mock patient created in the resolve step
-                setCurrentPatient({
-                    _id: checkData.data.patient_id,
-                    id: checkData.data.patient_id,
-                    name: checkData.data.name,
-                    phone: checkData.data.phone,
-                    age: 30, // Default mock age
-                    chronic_conditions: []
-                });
-
-                // Re-resolve with doctor ID now that we have it to link them
-                if (loginData.success && loginData.doctor) {
-                    await fetch(`${API}/api/patient/resolve`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: name.trim(),
-                            phone: normalizedPhone,
-                            doctor_id: loginData.doctor._id,
-                        }),
-                    });
-                }
-            }
-
             onClose();
             // Redirect to Scribe Context Page
             navigate('/scribe');
