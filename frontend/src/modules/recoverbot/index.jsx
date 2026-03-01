@@ -83,7 +83,7 @@ export default function RecoverBot() {
     const filteredFlagged = flagged.filter(filterFn);
 
     return (
-        <div style={{ fontFamily: "'Inter', sans-serif", color: "#0F172A", minHeight: "100vh", background: "#F8FAFC" }}>
+        <div style={{ fontFamily: "'Inter', sans-serif", color: "#0F172A", height: "100%", overflowY: "auto", background: "#F8FAFC" }}>
             {/* Header */}
             <div
                 style={{

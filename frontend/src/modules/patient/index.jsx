@@ -84,7 +84,7 @@ export default function PatientProfile() {
                             <div className="space-y-4">
                                 {consultations.map(consult => {
                                     const isExpanded = expandedConsultationId === consult._id;
-                                    const date = new Date(consult.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                    const date = new Date(consult.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
                                     return (
                                         <div key={consult._id} className="border border-surface-200 rounded-lg overflow-hidden transition-all duration-200">
