@@ -33,8 +33,8 @@ const ScribeAIModule = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    patient_id: currentPatient.id,
-                    doctor_id: currentDoctor.id,
+                    patient_id: currentPatient._id || currentPatient.id,
+                    doctor_id: currentDoctor._id || currentDoctor.id,
                     transcript
                 })
             });
@@ -103,7 +103,7 @@ const ScribeAIModule = () => {
                     <div>
                         <h1 className="text-xl font-bold text-surface-900">{currentPatient.name}</h1>
                         <div className="flex items-center text-sm text-surface-500 mt-1 space-x-4">
-                            <span>ID: <span className="font-mono text-surface-700">{currentPatient.id}</span></span>
+                            <span>ID: <span className="font-mono text-surface-700">{currentPatient._id || currentPatient.id}</span></span>
                             <span>Age: {currentPatient.age}</span>
                             <span>Language: {currentPatient.language}</span>
                         </div>

@@ -9,7 +9,7 @@ export default function GapQueue() {
     const fetchGaps = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/caregap/pending');
+            const res = await fetch('http://localhost:8000/api/caregap/pending');
             const json = await res.json();
             if (json.success) {
                 setGaps(json.data);
@@ -28,7 +28,7 @@ export default function GapQueue() {
         // We could send the finalMessage to a backend endpoint like /api/caregap/approve/{id} with body if it allowed edits.
         // The PRD says "inline editable draft message" - we assume the edit makes it to the user. Since the PRD API `POST /api/caregap/approve/{gap_id}` doesn't specify a body, we will just pass it, or we could update it first. For hackathon, we'll just call the default approve.
         try {
-            await fetch(`/api/caregap/approve/${id}`, { method: 'POST' });
+            await fetch(`http://localhost:8000/api/caregap/approve/${id}`, { method: 'POST' });
             setGaps(prev => prev.filter(g => (g.id || g._id) !== id));
         } catch (e) {
             console.error(e);
@@ -37,7 +37,7 @@ export default function GapQueue() {
 
     const handleDismiss = async (id) => {
         try {
-            await fetch(`/api/caregap/dismiss/${id}`, { method: 'POST' });
+            await fetch(`http://localhost:8000/api/caregap/dismiss/${id}`, { method: 'POST' });
             setGaps(prev => prev.filter(g => (g.id || g._id) !== id));
         } catch (e) {
             console.error(e);
@@ -46,7 +46,7 @@ export default function GapQueue() {
 
     const handleScan = async () => {
         try {
-            await fetch('/api/caregap/scan', { method: 'POST' });
+            await fetch('http://localhost:8000/api/caregap/scan', { method: 'POST' });
             alert("Scan triggered! Refresh shortly.");
         } catch (e) {
             console.error(e);

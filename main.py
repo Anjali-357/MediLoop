@@ -6,25 +6,37 @@ from shared.database import db
 # Import routers for modules (mocking the others for now as they are owned by other devs)
 try:
     from module1_scribe.router import router as scribe_router
-except ImportError:
+except Exception as e:
+    print(f"Failed to load user module1_scribe: {e}")
     scribe_router = None
+
+try:
+    from module0_identity.router import router as identity_router
+except Exception as e:
+    print(f"Failed to load user module0_identity: {e}")
+    identity_router = None
 
 try:
     from module2_recoverbot.router import router as recoverbot_router
     from module2_recoverbot.events import start_subscribers
     from module2_recoverbot.services.scheduler_service import start_scheduler
-except ImportError:
+except Exception as e:
+    print(f"CRITICAL: Failed to load user module2_recoverbot: {e}")
+    import traceback
+    traceback.print_exc()
     recoverbot_router = None
 
 try:
     from module3_painscan.router import router as painscan_router
-except ImportError:
+except Exception as e:
+    print(f"Failed to load user module3_painscan: {e}")
     painscan_router = None
 
 try:
     from module4_caregap.router import router as caregap_router
     from module4_caregap.scanner import setup_scanner as caregap_setup_scanner
-except ImportError:
+except Exception as e:
+    print(f"Failed to load user module4_caregap: {e}")
     caregap_router = None
 
 try:
@@ -49,6 +61,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+if identity_router:
+    app.include_router(identity_router, prefix='/api/identity')
 if scribe_router:
     app.include_router(scribe_router, prefix='/api/scribe')
 if recoverbot_router:
@@ -72,15 +86,17 @@ async def startup_event():
         import asyncio
         asyncio.create_task(start_subscribers())
         print("✅ RecoverBot events and scheduler started")
-    except ImportError:
-        pass
+    except Exception as e:
+        print(f"Failed to start RecoverBot events: {e}")
+        import traceback
+        traceback.print_exc()
         
     try:
         from module4_caregap.scanner import setup_scanner as caregap_setup_scanner
         caregap_setup_scanner()
         print("✅ CareGap events and scheduler started")
-    except ImportError as e:
-        print(f"Failed to load CareGap: {e}")
+    except Exception as e:
+        print(f"Failed to start CareGap events: {e}")
 
     try:
         from module5_orchestrator.router import router as _o

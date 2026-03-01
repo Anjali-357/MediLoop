@@ -46,12 +46,32 @@ class TokenPayload(BaseModel):
 
 class PatientOut(MongoBaseModel):
     name: str
-    dob: datetime
-    phone: str
-    language: str
-    doctor_id: str
-    age: int
+    dob: Optional[datetime] = None
+    phone: Optional[str] = None
+    language: Optional[str] = "English"
+    doctor_id: Optional[str] = None
+    age: Optional[int] = None
     chronic_conditions: List[str] = []
+    onboarding_status: str = "completed"
+    source: str = "clinic"
+    last_active_at: datetime = Field(default_factory=datetime.utcnow)
+    whatsapp_opt_in: bool = False
+
+class DoctorOut(MongoBaseModel):
+    name: str
+    phone: str
+    speciality: str
+    hospital: str
+    whatsapp_number: Optional[str] = None
+    status: str = "active"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class DoctorPatientMapOut(MongoBaseModel):
+    doctor_id: str
+    patient_id: str
+    relationship_status: str = "active"
+    primary_doctor: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class ICDCode(BaseModel):

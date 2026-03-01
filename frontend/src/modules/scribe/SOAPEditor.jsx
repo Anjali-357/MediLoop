@@ -20,7 +20,7 @@ const SOAPEditor = ({ soapData, setSoapData, isGenerating }) => {
             <div className="card p-6 h-full flex flex-col items-center justify-center bg-white border border-surface-200 min-h-[400px]">
                 <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
                 <h3 className="text-lg font-medium text-surface-900">Synthesizing Consultation...</h3>
-                <p className="text-sm text-surface-500 mt-2">Gemini is structuring the SOAP note</p>
+                <p className="text-sm text-surface-500 mt-2">llama is structuring the SOAP note</p>
             </div>
         );
     }

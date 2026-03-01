@@ -7,7 +7,7 @@ export default function AnalyticsDashboard() {
     useEffect(() => {
         async function fetchAnalytics() {
             try {
-                const res = await fetch('/api/caregap/analytics');
+                const res = await fetch('http://localhost:8000/api/caregap/analytics');
                 const json = await res.json();
                 if (json.success) {
                     const formatted = Object.keys(json.data).map(type => ({
