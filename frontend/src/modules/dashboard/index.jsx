@@ -249,7 +249,7 @@ export default function DoctorDashboard() {
 
                     {/* Section 1: All Patients */}
                     <section>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: theme.textMain }}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.accentBlue, boxShadow: `0 0 10px ${theme.accentBlue}` }}></span>
                             All Patients
                         </h2>
@@ -292,10 +292,10 @@ export default function DoctorDashboard() {
                                         </div>
 
                                         <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
+                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${theme.glassBorder}`, padding: '10px', borderRadius: '8px', color: theme.textMain, fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                                                 Patient Profile
                                             </button>
-                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: `linear-gradient(135deg, ${theme.primary}, ${theme.primaryHover})`, border: 'none', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'box-shadow 0.2s' }} onMouseOver={e => e.currentTarget.style.boxShadow = `0 4px 12px rgba(16, 185, 129, 0.3)`} onMouseOut={e => e.currentTarget.style.boxShadow = 'none'}>
+                                            <button onClick={(e) => { e.stopPropagation(); handleViewPatient(p); }} style={{ flex: 1, background: `linear-gradient(135deg, ${theme.primary}, ${theme.primaryHover})`, border: 'none', padding: '10px', borderRadius: '8px', color: '#ffffff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }} onMouseOver={e => { e.currentTarget.style.boxShadow = `0 6px 16px rgba(16, 185, 129, 0.4)`; e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                                                 View Consults
                                             </button>
                                         </div>
@@ -307,7 +307,7 @@ export default function DoctorDashboard() {
 
                     {/* Section 2: Pending Preventive Actions */}
                     <section>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: theme.textMain }}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.primary, boxShadow: `0 0 10px ${theme.primary}` }}></span>
                             Pending Preventive Actions
                         </h2>
