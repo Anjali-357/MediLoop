@@ -6,10 +6,8 @@ import ScribeAIModule from './modules/scribe'
 import RecoverbotModule from './modules/recoverbot'
 import PainscanModule from './modules/painscan'
 import CareGapModule from './modules/caregap'
-<<<<<<< HEAD
 import OrchestratorModule from './modules/orchestrator'
 import CommHubModule from './modules/commhub'
-=======
 import DashboardModule from './modules/dashboard'
 
 const ProtectedRoute = ({ children }) => {
@@ -22,7 +20,6 @@ const ProtectedRoute = ({ children }) => {
 
 function AppContent() {
   const { currentPatient } = useContext(AppContext);
->>>>>>> 3da149a (onboarding, dashboard nd scrie ai bug fixed)
 
   return (
     <BrowserRouter>
@@ -47,20 +44,16 @@ function AppContent() {
                     </Link>
                     <Link to="/caregap" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                       CareGap
-<<<<<<< HEAD
-                    </a>
-                    <a href="/orchestrator" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                      🧠 Orchestrator
-                    </a>
-                    <a href="/commhub" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                      📲 CommHub
-                    </a>
-=======
                     </Link>
                     <Link to="/dashboard" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                       Dashboard
                     </Link>
->>>>>>> 3da149a (onboarding, dashboard nd scrie ai bug fixed)
+                    <Link to="/orchestrator" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                      🧠 Orchestrator
+                    </Link>
+                    <Link to="/commhub" className="border-transparent text-surface-500 hover:border-surface-300 hover:text-surface-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                      📲 CommHub
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -68,27 +61,6 @@ function AppContent() {
           </nav>
         )}
 
-<<<<<<< HEAD
-          <main className="max-w-7xl auto px-4 sm:px-6 lg:px-8 py-8">
-            <Routes>
-              <Route path="/" element={<Navigate to="/scribe" replace />} />
-              <Route path="/scribe" element={<ScribeAIModule />} />
-              <Route path="/recoverbot" element={<RecoverbotModule />} />
-              <Route path="/painscan" element={<PainscanModule />} />
-              <Route path="/caregap" element={<CareGapModule />} />
-              <Route path="/orchestrator" element={<OrchestratorModule />} />
-              <Route path="/commhub" element={<CommHubModule />} />
-              <Route path="*" element={
-                <div className="text-center py-12">
-                  <h2 className="text-base font-semibold text-primary-600">404</h2>
-                  <p className="mt-1 text-sm text-surface-500">Page under construction by other developers.</p>
-                </div>
-              } />
-            </Routes>
-          </main>
-        </div>
-      </BrowserRouter>
-=======
         <main className="max-w-7xl auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -98,6 +70,8 @@ function AppContent() {
             <Route path="/painscan" element={<ProtectedRoute><PainscanModule /></ProtectedRoute>} />
             <Route path="/caregap" element={<ProtectedRoute><CareGapModule /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardModule /></ProtectedRoute>} />
+            <Route path="/orchestrator" element={<OrchestratorModule />} />
+            <Route path="/commhub" element={<CommHubModule />} />
             <Route path="*" element={
               <div className="text-center py-12">
                 <h2 className="text-base font-semibold text-primary-600">404</h2>
@@ -115,7 +89,6 @@ function App() {
   return (
     <AppProvider>
       <AppContent />
->>>>>>> 3da149a (onboarding, dashboard nd scrie ai bug fixed)
     </AppProvider>
   )
 }
