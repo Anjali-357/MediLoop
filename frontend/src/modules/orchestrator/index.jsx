@@ -87,7 +87,7 @@ export default function OrchestratorDashboard() {
 
     const fetchPatients = async () => {
         try {
-            const r = await fetch(`${API}/api/recoverbot/followups`).then(x => x.json());
+            const r = await fetch(`${API}/api/commhub/patients`).then(x => x.json());
             if (r.success) setPatients(r.data || []);
         } catch (e) { console.error(e); }
     };
@@ -181,7 +181,7 @@ export default function OrchestratorDashboard() {
                         >
                             <option value="">— Select patient —</option>
                             {patients.map(p => (
-                                <option key={p._id} value={p.patient_id}>{p.patient_name}</option>
+                                <option key={p._id} value={p._id}>{p.name}</option>
                             ))}
                         </select>
 
@@ -227,7 +227,7 @@ export default function OrchestratorDashboard() {
                         >
                             <option value="">— Select patient —</option>
                             {patients.map(p => (
-                                <option key={p._id} value={p.patient_id}>{p.patient_name}</option>
+                                <option key={p._id} value={p._id}>{p.name}</option>
                             ))}
                         </select>
                         <label style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Module to trigger</label>

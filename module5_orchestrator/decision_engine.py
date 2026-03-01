@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timezone
 from shared.database import db
 from shared.events import publish
-from module4_caregap.messaging import send_whatsapp_message
+from module6_commhub.gateway import send_whatsapp
 
 DOCTOR_PHONE = os.getenv("DOCTOR_PHONE", os.getenv("TWILIO_PHONE_NUMBER", ""))
 
@@ -52,7 +52,7 @@ async def execute_decision(patient_id: str, intent: str, patient: dict,
             "source": "orchestrator",
         })
         if phone:
-            send_whatsapp_message(phone,
+            send_whatsapp(phone,
                 f"Hello, our system has detected that {name} may be in discomfort. "
                 f"Please use the PainScan tool to help us assess their pain level:\n\n"
                 f"🔗 {painscan_link}\n\n"
@@ -97,7 +97,7 @@ async def execute_decision(patient_id: str, intent: str, patient: dict,
         except Exception:
             reply = f"Hi {name}, thank you for reaching out! A care team member will get back to you shortly."
         if phone:
-            send_whatsapp_message(phone, reply)
+            send_whatsapp(phone, reply)
         action_taken = f"Sent general chatbot reply"
 
     elif intent == "EMERGENCY":
@@ -110,7 +110,7 @@ async def execute_decision(patient_id: str, intent: str, patient: dict,
         })
         # Immediate WhatsApp back to patient
         if phone:
-            send_whatsapp_message(phone,
+            send_whatsapp(phone,
                 f"🚨 {name}, this sounds urgent! We are alerting your care team immediately. "
                 "If this is a medical emergency, please call 112 (emergency services) right now!")
         action_taken = "Published doctor.alert + notified patient of emergency"

@@ -32,6 +32,11 @@ try:
 except ImportError:
     orchestrator_router = None
 
+try:
+    from module6_commhub.router import router as commhub_router
+except ImportError:
+    commhub_router = None
+
 app = FastAPI(title='MediLoop')
 
 # CORS settings
@@ -54,6 +59,8 @@ if caregap_router:
     app.include_router(caregap_router, prefix='/api/caregap')
 if orchestrator_router:
     app.include_router(orchestrator_router, prefix='/api/orchestrator')
+if commhub_router:
+    app.include_router(commhub_router, prefix='/api/commhub')
 
 @app.on_event("startup")
 async def startup_event():
@@ -80,6 +87,15 @@ async def startup_event():
         print("✅ Orchestrator (AI Intent Router) started")
     except ImportError as e:
         print(f"Failed to load Orchestrator: {e}")
+
+    try:
+        import asyncio
+        from module6_commhub.event_listener import start_listeners as commhub_start
+        asyncio.create_task(commhub_start())
+        print("✅ CommHub event listeners started")
+    except ImportError as e:
+        print(f"Failed to load CommHub: {e}")
+
 
 @app.get("/")
 def read_root():
