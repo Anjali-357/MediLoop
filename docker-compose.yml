@@ -24,18 +24,11 @@ services:
     container_name: mediloop-backend
     ports:
       - "8000:8000"
-    environment:
-      - MONGO_URI=${MONGO_URI}
-      - REDIS_URL=redis://redis:6379
-      - FRONTEND_URL=http://localhost:5174
-      - MONGO_DB_NAME=mediloop
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
-      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
-      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
-      - JWT_SECRET=${JWT_SECRET:-123456}
     env_file:
       - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - FRONTEND_URL=http://localhost:5174
     depends_on:
       - mongodb
       - redis
