@@ -193,7 +193,7 @@ export default function DoctorDashboard() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col p-6 overflow-hidden">
+        <div className="w-full h-full flex flex-col p-6 overflow-y-auto">
             {/* Header section with Stats */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexShrink: 0 }}>
                 <div>
