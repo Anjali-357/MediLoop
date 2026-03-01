@@ -5,15 +5,15 @@
 import RiskBadge from "./RiskBadge";
 
 const STATUS_PILL = {
-    active: { bg: "#dbeafe22", color: "#93c5fd" },
-    flagged: { bg: "#fee2e222", color: "#fca5a5" },
-    completed: { bg: "#d1fae522", color: "#6ee7b7" },
+    active: { bg: "#dbeafe22", color: "#2563EB" },
+    flagged: { bg: "#fee2e222", color: "#DC2626" },
+    completed: { bg: "#d1fae522", color: "#059669" },
 };
 
 export default function FollowupList({ followups = [], onSelect }) {
     if (followups.length === 0) {
         return (
-            <p style={{ color: "#475569", textAlign: "center", padding: "24px 0" }}>
+            <p style={{ color: "#64748B", textAlign: "center", padding: "24px 0" }}>
                 No follow-ups found.
             </p>
         );
@@ -23,7 +23,7 @@ export default function FollowupList({ followups = [], onSelect }) {
         <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
                 <thead>
-                    <tr style={{ borderBottom: "1px solid #1e293b" }}>
+                    <tr style={{ borderBottom: "1px solid #E2E8F0" }}>
                         {["Patient", "Status", "Risk", "Score", "Created", ""].map((h) => (
                             <th
                                 key={h}
@@ -49,14 +49,14 @@ export default function FollowupList({ followups = [], onSelect }) {
                             <tr
                                 key={f._id}
                                 style={{
-                                    borderBottom: "1px solid #0f172a",
+                                    borderBottom: "1px solid #E2E8F0",
                                     transition: "background 0.15s",
                                 }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = "#1e293b44")}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "#F1F5F9")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                             >
                                 <td style={{ padding: "10px 12px" }}>
-                                    <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 4 }}>
+                                    <div style={{ fontWeight: 600, color: "#0F172A", marginBottom: 4 }}>
                                         {f.patient_name || "Unknown Patient"}
                                     </div>
                                     <button
@@ -67,14 +67,14 @@ export default function FollowupList({ followups = [], onSelect }) {
                                         }}
                                         style={{
                                             background: "transparent",
-                                            border: "1px solid #334155",
+                                            border: "1px solid #E2E8F0",
                                             color: "#64748b",
                                             fontSize: "0.65rem",
                                             padding: "2px 6px",
                                             borderRadius: "4px",
                                             cursor: "pointer",
                                         }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.color = "#94a3b8")}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = "#64748B")}
                                         onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}
                                     >
                                         [View ID]
@@ -97,7 +97,7 @@ export default function FollowupList({ followups = [], onSelect }) {
                                 <td style={{ padding: "10px 12px" }}>
                                     <RiskBadge label={f.risk_label} />
                                 </td>
-                                <td style={{ padding: "10px 12px", color: "#94a3b8" }}>
+                                <td style={{ padding: "10px 12px", color: "#64748B" }}>
                                     {(f.risk_score * 100).toFixed(0)}%
                                 </td>
                                 <td style={{ padding: "10px 12px", color: "#64748b" }}>
@@ -109,20 +109,20 @@ export default function FollowupList({ followups = [], onSelect }) {
                                         style={{
                                             padding: "4px 12px",
                                             borderRadius: 6,
-                                            border: "1px solid #334155",
+                                            border: "1px solid #E2E8F0",
                                             background: "transparent",
-                                            color: "#94a3b8",
+                                            color: "#64748B",
                                             fontSize: "0.75rem",
                                             cursor: "pointer",
                                             transition: "all 0.15s",
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = "#1e293b";
-                                            e.currentTarget.style.color = "#e2e8f0";
+                                            e.currentTarget.style.background = "#F1F5F9";
+                                            e.currentTarget.style.color = "#0F172A";
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.background = "transparent";
-                                            e.currentTarget.style.color = "#94a3b8";
+                                            e.currentTarget.style.color = "#64748B";
                                         }}
                                     >
                                         View

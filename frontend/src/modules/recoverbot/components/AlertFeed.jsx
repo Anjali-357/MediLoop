@@ -6,8 +6,8 @@
 import { useContext, useEffect, useState } from "react";
 
 const RISK_COLORS = {
-    HIGH: { bg: "#7f1d1d22", border: "#ef4444", text: "#fca5a5" },
-    CRITICAL: { bg: "#701a7522", border: "#d946ef", text: "#f0abfc" },
+    HIGH: { bg: "#7f1d1d22", border: "#ef4444", text: "#DC2626" },
+    CRITICAL: { bg: "#701a7522", border: "#d946ef", text: "#C026D3" },
 };
 
 function AlertCard({ alert }) {
@@ -30,7 +30,7 @@ function AlertCard({ alert }) {
                     {new Date(alert.ts).toLocaleTimeString()}
                 </span>
             </div>
-            <p style={{ margin: "4px 0 0", color: "#94a3b8", fontSize: "0.78rem" }}>
+            <p style={{ margin: "4px 0 0", color: "#64748B", fontSize: "0.78rem" }}>
                 Patient ID: {alert.patient_id} · Risk Score: {(alert.risk_score * 100).toFixed(0)}%
             </p>
         </div>
@@ -70,7 +70,7 @@ export default function AlertFeed({ wsUrl = DEFAULT_WS_URL }) {
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h3 style={{ color: "#e2e8f0", margin: 0 }}>Live Alerts</h3>
+                <h3 style={{ color: "#0F172A", margin: 0 }}>Live Alerts</h3>
                 <span
                     style={{
                         fontSize: "0.72rem",
@@ -86,7 +86,7 @@ export default function AlertFeed({ wsUrl = DEFAULT_WS_URL }) {
             </div>
 
             {alerts.length === 0 && (
-                <p style={{ color: "#475569", fontSize: "0.85rem", textAlign: "center", padding: "24px 0" }}>
+                <p style={{ color: "#64748B", fontSize: "0.85rem", textAlign: "center", padding: "24px 0" }}>
                     No alerts yet. Monitoring active patients…
                 </p>
             )}

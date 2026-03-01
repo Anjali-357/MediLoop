@@ -46,7 +46,7 @@ export default function PatientProfile() {
             </div>
 
             {/* Existing Shared Intelligence Panel (takes up the rest of the viewing space) */}
-            <div className="flex-1 bg-surface-900 rounded-xl overflow-hidden shadow-xl" style={{ minHeight: '500px' }}>
+            <div className="flex-1 bg-surface-50 rounded-xl overflow-hidden shadow-sm border border-surface-200" style={{ minHeight: '500px' }}>
                 <PatientContextPanel patientId={currentPatient._id || currentPatient.id} />
             </div>
         </div>

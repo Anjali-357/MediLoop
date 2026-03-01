@@ -68,8 +68,8 @@ export default function RecoverBot() {
         cursor: "pointer",
         fontWeight: 600,
         fontSize: "0.82rem",
-        background: tab === name ? "#1e40af" : "transparent",
-        color: tab === name ? "#fff" : "#64748b",
+        background: tab === name ? "#10B981" : "transparent",
+        color: tab === name ? "#FFFFFF" : "#64748b",
         transition: "all 0.2s",
     });
 
@@ -83,13 +83,13 @@ export default function RecoverBot() {
     const filteredFlagged = flagged.filter(filterFn);
 
     return (
-        <div style={{ fontFamily: "'Inter', sans-serif", color: "#e2e8f0", minHeight: "100vh", background: "#0a0f1e" }}>
+        <div style={{ fontFamily: "'Inter', sans-serif", color: "#0F172A", minHeight: "100vh", background: "#F8FAFC" }}>
             {/* Header */}
             <div
                 style={{
-                    background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
+                    background: "linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%)",
                     padding: "24px 32px",
-                    borderBottom: "1px solid #1e293b",
+                    borderBottom: "1px solid #E2E8F0",
                 }}
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -117,12 +117,12 @@ export default function RecoverBot() {
                                 style={{
                                     padding: "10px 16px",
                                     borderRadius: 10,
-                                    background: s.alert ? "#7f1d1d22" : "#1e293b",
-                                    border: `1px solid ${s.alert ? "#ef4444" : "#334155"}`,
+                                    background: s.alert ? "#7f1d1d22" : "#FFFFFF",
+                                    border: `1px solid ${s.alert ? "#ef4444" : "#E2E8F0"}`,
                                     minWidth: 100,
                                 }}
                             >
-                                <div style={{ fontSize: "1.5rem", fontWeight: 800, color: s.alert ? "#f87171" : "#e2e8f0" }}>
+                                <div style={{ fontSize: "1.5rem", fontWeight: 800, color: s.alert ? "#f87171" : "#0F172A" }}>
                                     {s.value}
                                 </div>
                                 <div style={{ fontSize: "0.7rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
@@ -132,14 +132,13 @@ export default function RecoverBot() {
                 )}
             </div>
 
-            {/* Tabs & Search */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 32px", borderBottom: "1px solid #1e293b", background: "#0f172a" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 32px", borderBottom: "1px solid #E2E8F0", background: "#FFFFFF" }}>
                 <div style={{ display: "flex" }}>
                     <button style={tabStyle("followups")} onClick={() => setTab("followups")}>
                         Follow-ups
                     </button>
                     <button style={tabStyle("flagged")} onClick={() => setTab("flagged")}>
-                        🚨 Flagged{flagged.length > 0 && <span style={{ marginLeft: 6, background: "#ef4444", color: "#fff", borderRadius: 9999, padding: "1px 6px", fontSize: "0.65rem" }}>{flagged.length}</span>}
+                        🚨 Flagged{flagged.length > 0 && <span style={{ marginLeft: 6, background: "#ef4444", color: "#0F172A", borderRadius: 9999, padding: "1px 6px", fontSize: "0.65rem" }}>{flagged.length}</span>}
                     </button>
                     <button style={tabStyle("alerts")} onClick={() => setTab("alerts")}>
                         Live Alerts
@@ -153,16 +152,16 @@ export default function RecoverBot() {
                             style={{
                                 padding: "6px 14px",
                                 borderRadius: "20px",
-                                border: "1px solid #334155",
-                                background: "#1e293b",
-                                color: "#e2e8f0",
+                                border: "1px solid #E2E8F0",
+                                background: "#FFFFFF",
+                                color: "#0F172A",
                                 fontSize: "0.8rem",
                                 outline: "none",
                                 cursor: "pointer",
                                 transition: "border-color 0.2s",
                             }}
-                            onFocus={(e) => (e.target.style.borderColor = "#4f46e5")}
-                            onBlur={(e) => (e.target.style.borderColor = "#334155")}
+                            onFocus={(e) => (e.target.style.borderColor = "#10B981")}
+                            onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
                         >
                             <option value="ALL">All Risks</option>
                             <option value="CRITICAL">🔴 Critical</option>
@@ -178,16 +177,16 @@ export default function RecoverBot() {
                             style={{
                                 padding: "6px 14px",
                                 borderRadius: "20px",
-                                border: "1px solid #334155",
-                                background: "#1e293b",
-                                color: "#e2e8f0",
+                                border: "1px solid #E2E8F0",
+                                background: "#FFFFFF",
+                                color: "#0F172A",
                                 fontSize: "0.8rem",
                                 outline: "none",
                                 width: "220px",
                                 transition: "border-color 0.2s",
                             }}
-                            onFocus={(e) => (e.target.style.borderColor = "#4f46e5")}
-                            onBlur={(e) => (e.target.style.borderColor = "#334155")}
+                            onFocus={(e) => (e.target.style.borderColor = "#10B981")}
+                            onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
                         />
                     </div>
                 )}
@@ -196,7 +195,7 @@ export default function RecoverBot() {
             {/* Content */}
             <div style={{ padding: "24px 32px" }}>
                 {loading && (
-                    <p style={{ color: "#475569", textAlign: "center" }}>Loading…</p>
+                    <p style={{ color: "#64748B", textAlign: "center" }}>Loading…</p>
                 )}
 
                 {!loading && selected && (
@@ -207,9 +206,9 @@ export default function RecoverBot() {
                                 marginBottom: 16,
                                 padding: "7px 14px",
                                 borderRadius: 8,
-                                border: "1px solid #334155",
+                                border: "1px solid #E2E8F0",
                                 background: "transparent",
-                                color: "#94a3b8",
+                                color: "#64748B",
                                 cursor: "pointer",
                                 fontSize: "0.82rem",
                             }}
@@ -218,15 +217,15 @@ export default function RecoverBot() {
                         </button>
                         <div
                             style={{
-                                background: "#0f172a",
-                                border: "1px solid #1e293b",
+                                background: "#FFFFFF",
+                                border: "1px solid #E2E8F0",
                                 borderRadius: 12,
                                 padding: 20,
                             }}
                         >
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                                 <div>
-                                    <h2 style={{ margin: 0, color: "#e2e8f0" }}>Follow-up Detail — {selected.patient_name}</h2>
+                                    <h2 style={{ margin: 0, color: "#0F172A" }}>Follow-up Detail — {selected.patient_name}</h2>
                                     <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "0.8rem", fontFamily: "monospace" }}>{selected._id}</p>
                                 </div>
                                 <RiskBadge label={selected.risk_label} />
@@ -234,9 +233,9 @@ export default function RecoverBot() {
 
                             {/* Conversation Log — always visible */}
                             <div style={{ marginBottom: 24 }}>
-                                <h3 style={{ color: "#e2e8f0", marginBottom: 12 }}>💬 Conversation History</h3>
+                                <h3 style={{ color: "#0F172A", marginBottom: 12 }}>💬 Conversation History</h3>
                                 {(!selected.conversation_log || selected.conversation_log.length === 0) ? (
-                                    <p style={{ color: "#475569", fontSize: "0.85rem" }}>No messages yet. Waiting for patient reply via WhatsApp.</p>
+                                    <p style={{ color: "#64748B", fontSize: "0.85rem" }}>No messages yet. Waiting for patient reply via WhatsApp.</p>
                                 ) : (
                                     <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 400, overflowY: "auto", padding: "4px 0" }}>
                                         {selected.conversation_log.map((entry, i) => (
@@ -245,8 +244,8 @@ export default function RecoverBot() {
                                                     maxWidth: "75%",
                                                     padding: "10px 14px",
                                                     borderRadius: entry.role === "bot" ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
-                                                    background: entry.role === "bot" ? "#1e293b" : "#4f46e5",
-                                                    color: "#f1f5f9",
+                                                    background: entry.role === "bot" ? "#F1F5F9" : "#10B981",
+                                                    color: "#0F172A",
                                                     fontSize: "0.85rem",
                                                     lineHeight: 1.6,
                                                     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
@@ -270,13 +269,13 @@ export default function RecoverBot() {
                 {!loading && !selected && tab === "followups" && (
                     <div
                         style={{
-                            background: "#0f172a",
-                            border: "1px solid #1e293b",
+                            background: "#FFFFFF",
+                            border: "1px solid #E2E8F0",
                             borderRadius: 12,
                             padding: 20,
                         }}
                     >
-                        <h2 style={{ marginTop: 0, color: "#e2e8f0" }}>Patient Follow-ups</h2>
+                        <h2 style={{ marginTop: 0, color: "#0F172A" }}>Patient Follow-ups</h2>
                         <FollowupList followups={filteredFollowups} onSelect={setSelected} />
                     </div>
                 )}
@@ -284,8 +283,8 @@ export default function RecoverBot() {
                 {!loading && !selected && tab === "flagged" && (
                     <div
                         style={{
-                            background: "#0f172a",
-                            border: "1px solid #1e293b",
+                            background: "#FFFFFF",
+                            border: "1px solid #E2E8F0",
                             borderRadius: 12,
                             padding: 20,
                         }}
@@ -298,8 +297,8 @@ export default function RecoverBot() {
                 {!loading && !selected && tab === "alerts" && (
                     <div
                         style={{
-                            background: "#0f172a",
-                            border: "1px solid #1e293b",
+                            background: "#FFFFFF",
+                            border: "1px solid #E2E8F0",
                             borderRadius: 12,
                             padding: 20,
                         }}

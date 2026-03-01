@@ -321,8 +321,8 @@ export default function DoctorDashboard() {
                                         onClick={handleBulkApprove}
                                         disabled={selectedGaps.size === 0 || approving}
                                         style={{
-                                            background: selectedGaps.size > 0 ? theme.primary : 'rgba(255,255,255,0.1)',
-                                            border: 'none', color: '#fff', padding: '6px 16px', borderRadius: '6px',
+                                            background: selectedGaps.size > 0 ? theme.primary : '#E2E8F0',
+                                            border: 'none', color: selectedGaps.size > 0 ? '#fff' : theme.textMuted, padding: '6px 16px', borderRadius: '6px',
                                             fontSize: '0.85rem', fontWeight: 600, cursor: selectedGaps.size > 0 ? 'pointer' : 'not-allowed',
                                             transition: 'background 0.2s'
                                         }}

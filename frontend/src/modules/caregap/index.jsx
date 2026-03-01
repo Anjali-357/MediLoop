@@ -46,17 +46,17 @@ function GapCard({ gap, onApprove, onDismiss }) {
                     }}>
                         {colors.label}
                     </span>
-                    <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: 6 }}>
-                        Patient: <span style={{ color: '#e2e8f0', fontFamily: 'monospace' }}>{gap.patient_id?.slice(-8)}</span>
+                    <p style={{ color: '#64748B', fontSize: '0.75rem', marginTop: 6 }}>
+                        Patient: <span style={{ color: '#0F172A', fontFamily: 'monospace' }}>{gap.patient_id?.slice(-8)}</span>
                     </p>
                     <p style={{ color: '#64748b', fontSize: '0.72rem', marginTop: 2 }}>
                         Flagged: {new Date(gap.flagged_at).toLocaleString()}
                     </p>
                 </div>
-                <span style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 600 }}>P{gap.priority}</span>
+                <span style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 600 }}>P{gap.priority}</span>
             </div>
 
-            <label style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>
+            <label style={{ color: '#64748B', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>
                 📱 Draft WhatsApp Message (editable)
             </label>
             <textarea
@@ -66,10 +66,10 @@ function GapCard({ gap, onApprove, onDismiss }) {
                 style={{
                     width: '100%',
                     boxSizing: 'border-box',
-                    background: '#0f172a',
-                    border: '1px solid #1e293b',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
                     borderRadius: 8,
-                    color: '#e2e8f0',
+                    color: '#0F172A',
                     fontSize: '0.82rem',
                     padding: '8px 10px',
                     resize: 'vertical',
@@ -84,9 +84,9 @@ function GapCard({ gap, onApprove, onDismiss }) {
                     style={{
                         padding: '7px 14px',
                         background: 'transparent',
-                        border: '1px solid #334155',
+                        border: '1px solid #E2E8F0',
                         borderRadius: 8,
-                        color: '#94a3b8',
+                        color: '#64748B',
                         cursor: 'pointer',
                         fontSize: '0.8rem',
                     }}
@@ -98,7 +98,7 @@ function GapCard({ gap, onApprove, onDismiss }) {
                     disabled={loading}
                     style={{
                         padding: '7px 16px',
-                        background: '#4f46e5',
+                        background: '#10B981',
                         border: 'none',
                         borderRadius: 8,
                         color: '#fff',
@@ -119,17 +119,17 @@ function Analytics({ stats }) {
     if (!entries.length) return null;
     return (
         <div style={{
-            background: '#0f172a',
-            border: '1px solid #1e293b',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
             borderRadius: 12,
             padding: 16,
             marginBottom: 24,
         }}>
-            <h3 style={{ color: '#e2e8f0', marginBottom: 14, fontSize: '1rem' }}>📊 Analytics</h3>
+            <h3 style={{ color: '#0F172A', marginBottom: 14, fontSize: '1rem' }}>📊 Analytics</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 {entries.map(([type, counts]) => (
                     <div key={type} style={{
-                        background: '#1e293b',
+                        background: '#FFFFFF',
                         borderRadius: 8,
                         padding: '8px 14px',
                         minWidth: 130,
@@ -201,9 +201,9 @@ export default function CareGapDashboard() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#020617',
+            background: '#F8FAFC',
             fontFamily: "'Inter', sans-serif",
-            color: '#e2e8f0',
+            color: '#0F172A',
             padding: 32,
         }}>
             {/* Header */}
@@ -217,14 +217,14 @@ export default function CareGapDashboard() {
                 <div style={{ display: 'flex', gap: 10 }}>
                     <button
                         onClick={fetchAll}
-                        style={{ padding: '8px 18px', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontSize: '0.82rem' }}
+                        style={{ padding: '8px 18px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, color: '#64748B', cursor: 'pointer', fontSize: '0.82rem' }}
                     >
                         🔄 Refresh
                     </button>
                     <button
                         onClick={handleScan}
                         disabled={scanning}
-                        style={{ padding: '8px 18px', background: '#4f46e5', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
+                        style={{ padding: '8px 18px', background: '#10B981', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
                     >
                         {scanning ? 'Scanning...' : '🔍 Run Scan'}
                     </button>
@@ -234,8 +234,8 @@ export default function CareGapDashboard() {
             {/* Toast */}
             {toast && (
                 <div style={{
-                    background: '#1e293b', border: '1px solid #334155', borderRadius: 8,
-                    padding: '10px 18px', marginBottom: 20, color: '#e2e8f0', fontSize: '0.85rem',
+                    background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8,
+                    padding: '10px 18px', marginBottom: 20, color: '#0F172A', fontSize: '0.85rem',
                 }}>
                     {toast}
                 </div>
@@ -248,7 +248,7 @@ export default function CareGapDashboard() {
                     { label: 'Total Gap Types', value: Object.keys(stats).length, color: '#818cf8' },
                 ].map(s => (
                     <div key={s.label} style={{
-                        background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12,
+                        background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12,
                         padding: '14px 24px', minWidth: 140,
                     }}>
                         <p style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: s.color }}>{s.value}</p>
@@ -261,20 +261,20 @@ export default function CareGapDashboard() {
             <Analytics stats={stats} />
 
             {/* Gap Queue */}
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20 }}>
-                <h2 style={{ marginTop: 0, color: '#e2e8f0', fontSize: '1.1rem' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20 }}>
+                <h2 style={{ marginTop: 0, color: '#0F172A', fontSize: '1.1rem' }}>
                     Pending Gaps ({gaps.length}) — Approve to send WhatsApp outreach
                 </h2>
 
-                {loading && <p style={{ color: '#475569' }}>Loading...</p>}
+                {loading && <p style={{ color: '#64748B' }}>Loading...</p>}
 
                 {!loading && gaps.length === 0 && (
                     <div style={{
                         textAlign: 'center', padding: '40px 20px',
-                        border: '2px dashed #1e293b', borderRadius: 12,
+                        border: '2px dashed #CBD5E1', borderRadius: 12,
                     }}>
-                        <p style={{ color: '#475569' }}>✅ No pending care gaps. All patients are up to date!</p>
-                        <p style={{ color: '#334155', fontSize: '0.8rem' }}>Click "Run Scan" to check for new gaps.</p>
+                        <p style={{ color: '#64748B' }}>✅ No pending care gaps. All patients are up to date!</p>
+                        <p style={{ color: '#0F172A', fontSize: '0.8rem' }}>Click "Run Scan" to check for new gaps.</p>
                     </div>
                 )}
 

@@ -10,7 +10,7 @@ const MODULE_COLORS = {
     orchestrator: { color: '#a78bfa', icon: '🧠' },
     manual: { color: '#64748b', icon: '✉️' },
     returning: { color: '#22d3ee', icon: '🔄' },
-    chatbot: { color: '#94a3b8', icon: '💬' },
+    chatbot: { color: '#64748B', icon: '💬' },
     emergency: { color: '#ef4444', icon: '🚨' },
 };
 
@@ -21,7 +21,7 @@ function SessionCard({ s }) {
 
     return (
         <div style={{
-            background: '#0f172a', border: '1px solid #1e293b',
+            background: '#FFFFFF', border: '1px solid #0F172A',
             borderLeft: `3px solid ${cfg.color}`,
             borderRadius: 10, padding: '12px 16px', marginBottom: 10,
         }}>
@@ -32,13 +32,13 @@ function SessionCard({ s }) {
                         <span style={{ color: cfg.color, fontWeight: 700, fontSize: '0.85rem' }}>
                             {s.active_module}
                         </span>
-                        <span style={{ color: '#334155', fontSize: '0.72rem', marginLeft: 8 }}>
+                        <span style={{ color: '#0F172A', fontSize: '0.72rem', marginLeft: 8 }}>
                             via {s.channel}
                         </span>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <span style={{ color: '#475569', fontSize: '0.72rem' }}>
+                    <span style={{ color: '#64748B', fontSize: '0.72rem' }}>
                         {s.last_message_ts ? new Date(s.last_message_ts).toLocaleString() : '—'}
                     </span>
                     <span style={{ color: '#64748b', fontSize: '0.75rem', fontFamily: 'monospace' }}>
@@ -46,7 +46,7 @@ function SessionCard({ s }) {
                     </span>
                     <button
                         onClick={() => setExpanded(p => !p)}
-                        style={{ background: '#1e293b', border: 'none', borderRadius: 6, color: '#94a3b8', padding: '3px 10px', cursor: 'pointer', fontSize: '0.75rem' }}
+                        style={{ background: '#0F172A', border: 'none', borderRadius: 6, color: '#64748B', padding: '3px 10px', cursor: 'pointer', fontSize: '0.75rem' }}
                     >
                         {expanded ? '▲' : `${msgs.length} msgs ▼`}
                     </button>
@@ -54,22 +54,22 @@ function SessionCard({ s }) {
             </div>
 
             {expanded && (
-                <div style={{ marginTop: 12, borderTop: '1px solid #1e293b', paddingTop: 10 }}>
-                    {msgs.length === 0 && <p style={{ color: '#334155', fontSize: '0.8rem' }}>No messages</p>}
+                <div style={{ marginTop: 12, borderTop: '1px solid #0F172A', paddingTop: 10 }}>
+                    {msgs.length === 0 && <p style={{ color: '#0F172A', fontSize: '0.8rem' }}>No messages</p>}
                     {msgs.slice().reverse().map((m, i) => (
                         <div key={i} style={{
                             background: '#020617', borderRadius: 8, padding: '8px 12px', marginBottom: 6,
-                            borderLeft: `2px solid ${m.direction === 'outbound' ? '#4f46e5' : '#334155'}`,
+                            borderLeft: `2px solid ${m.direction === 'outbound' ? '#10B981' : '#0F172A'}`,
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                                 <span style={{ color: m.direction === 'outbound' ? '#818cf8' : '#64748b', fontSize: '0.7rem', fontWeight: 600 }}>
                                     {m.direction === 'outbound' ? '⬆ MediLoop' : '⬇ Patient'} · {m.module}
                                 </span>
-                                <span style={{ color: '#334155', fontSize: '0.68rem' }}>
+                                <span style={{ color: '#0F172A', fontSize: '0.68rem' }}>
                                     {m.ts ? new Date(m.ts).toLocaleTimeString() : ''}
                                 </span>
                             </div>
-                            <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0, whiteSpace: 'pre-wrap' }}>
+                            <p style={{ color: '#64748B', fontSize: '0.78rem', margin: 0, whiteSpace: 'pre-wrap' }}>
                                 {m.body}
                             </p>
                         </div>
@@ -145,7 +145,7 @@ export default function CommHubDashboard() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', background: '#020617', fontFamily: "'Inter', sans-serif", color: '#e2e8f0', padding: 32 }}>
+        <div style={{ minHeight: '100vh', background: '#020617', fontFamily: "'Inter', sans-serif", color: '#0F172A', padding: 32 }}>
 
             <div style={{ marginBottom: 28 }}>
                 <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>📲 CommHub</h1>
@@ -155,7 +155,7 @@ export default function CommHubDashboard() {
             </div>
 
             {toast && (
-                <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '10px 18px', marginBottom: 20, fontSize: '0.85rem' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 8, padding: '10px 18px', marginBottom: 20, fontSize: '0.85rem' }}>
                     {toast}
                 </div>
             )}
@@ -166,7 +166,7 @@ export default function CommHubDashboard() {
                     { label: 'Active Sessions', value: sessions.length, color: '#818cf8' },
                     { label: 'Messages Sent', value: sessions.reduce((a, s) => a + (s.messages?.length || 0), 0), color: '#34d399' },
                 ].map(s => (
-                    <div key={s.label} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '14px 24px', minWidth: 140 }}>
+                    <div key={s.label} style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 12, padding: '14px 24px', minWidth: 140 }}>
                         <p style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: s.color }}>{s.value}</p>
                         <p style={{ margin: 0, color: '#64748b', fontSize: '0.78rem' }}>{s.label}</p>
                     </div>
@@ -178,17 +178,17 @@ export default function CommHubDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     {/* Initiate Conversation */}
-                    <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 12, padding: 20 }}>
                         <h2 style={{ marginTop: 0, fontSize: '1rem' }}>👋 Initiate Conversation</h2>
-                        <p style={{ color: '#475569', fontSize: '0.8rem', marginBottom: 14 }}>
+                        <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: 14 }}>
                             Send the onboarding WhatsApp message to a patient instantly.
                         </p>
 
-                        <label style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Patient</label>
+                        <label style={{ color: '#64748B', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Patient</label>
                         <select
                             value={initPatient}
                             onChange={e => setInitPatient(e.target.value)}
-                            style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', padding: '8px 12px', marginBottom: 12, fontSize: '0.85rem', boxSizing: 'border-box' }}
+                            style={{ width: '100%', background: '#0F172A', border: '1px solid #0F172A', borderRadius: 8, color: '#0F172A', padding: '8px 12px', marginBottom: 12, fontSize: '0.85rem', boxSizing: 'border-box' }}
                         >
                             <option value="">— Select patient —</option>
                             {patients.map(p => (
@@ -196,7 +196,7 @@ export default function CommHubDashboard() {
                             ))}
                         </select>
 
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: '0.8rem', marginBottom: 14, cursor: 'pointer' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#64748B', fontSize: '0.8rem', marginBottom: 14, cursor: 'pointer' }}>
                             <input type="checkbox" checked={initReturn} onChange={e => setInitReturn(e.target.checked)}
                                 style={{ width: 16, height: 16 }} />
                             Returning patient (send re-engagement message)
@@ -205,24 +205,24 @@ export default function CommHubDashboard() {
                         <button
                             onClick={handleInitiate}
                             disabled={initiating || !initPatient}
-                            style={{ width: '100%', padding: 10, background: '#4f46e5', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                            style={{ width: '100%', padding: 10, background: '#10B981', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
                         >
                             {initiating ? '📤 Sending...' : '📤 Send Welcome Message'}
                         </button>
                     </div>
 
                     {/* Manual Send */}
-                    <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 12, padding: 20 }}>
                         <h2 style={{ marginTop: 0, fontSize: '1rem' }}>✉️ Manual Send</h2>
-                        <p style={{ color: '#475569', fontSize: '0.8rem', marginBottom: 14 }}>
+                        <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: 14 }}>
                             Doctor sends a custom WhatsApp to any patient directly.
                         </p>
 
-                        <label style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Patient</label>
+                        <label style={{ color: '#64748B', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Patient</label>
                         <select
                             value={sendPatient}
                             onChange={e => setSendPatient(e.target.value)}
-                            style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', padding: '8px 12px', marginBottom: 12, fontSize: '0.85rem', boxSizing: 'border-box' }}
+                            style={{ width: '100%', background: '#0F172A', border: '1px solid #0F172A', borderRadius: 8, color: '#0F172A', padding: '8px 12px', marginBottom: 12, fontSize: '0.85rem', boxSizing: 'border-box' }}
                         >
                             <option value="">— Select patient —</option>
                             {patients.map(p => (
@@ -230,13 +230,13 @@ export default function CommHubDashboard() {
                             ))}
                         </select>
 
-                        <label style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Message</label>
+                        <label style={{ color: '#64748B', fontSize: '0.78rem', display: 'block', marginBottom: 4 }}>Message</label>
                         <textarea
                             rows={4}
                             placeholder="Type your message..."
                             value={sendMsg}
                             onChange={e => setSendMsg(e.target.value)}
-                            style={{ width: '100%', boxSizing: 'border-box', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', padding: '8px 12px', fontSize: '0.85rem', resize: 'vertical', marginBottom: 12 }}
+                            style={{ width: '100%', boxSizing: 'border-box', background: '#0F172A', border: '1px solid #0F172A', borderRadius: 8, color: '#0F172A', padding: '8px 12px', fontSize: '0.85rem', resize: 'vertical', marginBottom: 12 }}
                         />
 
                         <button
@@ -249,9 +249,9 @@ export default function CommHubDashboard() {
                     </div>
 
                     {/* How CommHub works */}
-                    <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 12, padding: 20 }}>
                         <h2 style={{ marginTop: 0, fontSize: '0.95rem', color: '#64748b' }}>🔁 Event → Message Flow</h2>
-                        <div style={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.8 }}>
+                        <div style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.8 }}>
                             {[
                                 ['patient.created', 'Welcome onboarding message'],
                                 ['patient.returning', 'Re-engagement message'],
@@ -270,21 +270,21 @@ export default function CommHubDashboard() {
                 </div>
 
                 {/* Right: Session log */}
-                <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 20 }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #0F172A', borderRadius: 12, padding: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                         <h2 style={{ margin: 0, fontSize: '1rem' }}>📋 Message Sessions</h2>
                         <button
                             onClick={fetchSessions}
-                            style={{ padding: '6px 14px', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontSize: '0.78rem' }}
+                            style={{ padding: '6px 14px', background: '#0F172A', border: '1px solid #0F172A', borderRadius: 8, color: '#64748B', cursor: 'pointer', fontSize: '0.78rem' }}
                         >
                             🔄 Refresh
                         </button>
                     </div>
 
                     <div style={{ maxHeight: 680, overflowY: 'auto' }}>
-                        {loading && <p style={{ color: '#475569' }}>Loading...</p>}
+                        {loading && <p style={{ color: '#64748B' }}>Loading...</p>}
                         {!loading && sessions.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '40px 0', color: '#334155' }}>
+                            <div style={{ textAlign: 'center', padding: '40px 0', color: '#0F172A' }}>
                                 <p style={{ fontSize: '2rem' }}>📲</p>
                                 <p style={{ fontSize: '0.85rem' }}>No sessions yet. Initiate a conversation above!</p>
                             </div>

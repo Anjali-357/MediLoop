@@ -5,13 +5,13 @@
 import { useState } from "react";
 
 const STATUS_COLOR = {
-    pending: "#94a3b8",
+    pending: "#64748B",
     completed: "#10b981",
     missed: "#f87171",
 };
 
 function ConvLog({ log }) {
-    if (!log || log.length === 0) return <p style={{ color: "#94a3b8", fontSize: "0.8rem" }}>No messages yet.</p>;
+    if (!log || log.length === 0) return <p style={{ color: "#64748B", fontSize: "0.8rem" }}>No messages yet.</p>;
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
             {log.map((entry, i) => (
@@ -27,8 +27,8 @@ function ConvLog({ log }) {
                             maxWidth: "80%",
                             padding: "8px 12px",
                             borderRadius: entry.role === "bot" ? "4px 14px 14px 14px" : "14px 4px 14px 14px",
-                            background: entry.role === "bot" ? "#1e293b" : "#3b82f6",
-                            color: "#f1f5f9",
+                            background: entry.role === "bot" ? "#0F172A" : "#3b82f6",
+                            color: "#0F172A",
                             fontSize: "0.82rem",
                             lineHeight: 1.5,
                         }}
@@ -51,14 +51,14 @@ export default function CheckinHistory({ followup }) {
 
     return (
         <div>
-            <h3 style={{ color: "#e2e8f0", marginBottom: 12 }}>Check-in Schedule</h3>
-            {slots.length === 0 && <p style={{ color: "#94a3b8" }}>No check-ins scheduled.</p>}
+            <h3 style={{ color: "#0F172A", marginBottom: 12 }}>Check-in Schedule</h3>
+            {slots.length === 0 && <p style={{ color: "#64748B" }}>No check-ins scheduled.</p>}
             {slots.map((slot, i) => (
                 <div
                     key={i}
                     style={{
-                        background: "#0f172a",
-                        border: "1px solid #1e293b",
+                        background: "#FFFFFF",
+                        border: "1px solid #E2E8F0",
                         borderRadius: 10,
                         marginBottom: 8,
                         overflow: "hidden",
@@ -75,7 +75,7 @@ export default function CheckinHistory({ followup }) {
                             background: "transparent",
                             border: "none",
                             cursor: "pointer",
-                            color: "#e2e8f0",
+                            color: "#0F172A",
                             fontSize: "0.85rem",
                         }}
                     >
@@ -86,7 +86,7 @@ export default function CheckinHistory({ followup }) {
                                     width: 10,
                                     height: 10,
                                     borderRadius: "50%",
-                                    background: STATUS_COLOR[slot.status] ?? "#94a3b8",
+                                    background: STATUS_COLOR[slot.status] ?? "#64748B",
                                     marginRight: 8,
                                 }}
                             />
